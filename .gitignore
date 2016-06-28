@@ -1,0 +1,4 @@
+txt/
+runs/
+.DS_Store
+word2vec_twitter_model.bin
