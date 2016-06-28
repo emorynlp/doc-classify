@@ -15,4 +15,4 @@ gensim<br>
 3. Create a folder called "txt" and put your training, dev, test data inside this folder.<br>
 4. Run python cnn_train.py to train.<br>
 5. Run python cnn_test.py to evaluate using test set<br>
-
+-> tensorflow will save model inside "runs" folder's subdirectory's "checkpoints" folder. Open cnn_test.py and specift the path of the model you want to evalutate (line 82). 
