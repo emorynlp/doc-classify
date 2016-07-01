@@ -34,6 +34,8 @@ tf.flags.DEFINE_integer("checkpoint_every", 10000, "Save model after this many s
 tf.flags.DEFINE_boolean("allow_soft_placement", True, "Allow device soft device placement")
 tf.flags.DEFINE_boolean("log_device_placement", False, "Log placement of ops on devices")
 tf.flags.DEFINE_float("learning_rate", 1e-3, "Learning rate (default: 1e-3)")
+tf.flags.DEFINE_boolean("random_seed", False, "Set to False to have same output everytime")
+tf.flags.DEFINE_integer("seed_number", 1234, "Seed number to use when using same random seed")
 
 FLAGS = tf.flags.FLAGS
 FLAGS._parse_flags()
@@ -87,13 +89,14 @@ print("Train/Dev split: {:d}/{:d}".format(len(y_train), len(y_dev)))
 
 # Training
 # ==================================================
-
+if not FLAGS.random_seed: tf.set_random_seed(FLAGS.seed_number)
 with tf.Graph().as_default():
     session_conf = tf.ConfigProto(
       allow_soft_placement=FLAGS.allow_soft_placement,
       log_device_placement=FLAGS.log_device_placement)
     sess = tf.Session(config=session_conf)
     with sess.as_default():
+        if not FLAGS.random_seed: tf.set_random_seed(FLAGS.seed_number)
         cnn = TextCNN(
             sequence_length=x_train.shape[1],
             num_classes=3,
@@ -199,7 +202,7 @@ with tf.Graph().as_default():
 
         # Generate batches
         batches = cnn_data_helpers.batch_iter(
-            list(zip(x_train, y_train)), FLAGS.batch_size, FLAGS.num_epochs)
+            list(zip(x_train, y_train)), FLAGS.batch_size, FLAGS.num_epochs, FLAGS.random_seed)
         
 
         # Training loop. For each batch...
