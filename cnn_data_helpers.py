@@ -96,22 +96,40 @@ def build_vocab(sentences):
 
 
 
-def build_input_data_with_w2v(sentences, labels, w2vmodel):
+def build_input_data_with_w2v(sentences, labels, w2vmodel, lexiconModel, useLexicon):
     """
-    Maps sentencs and labels to vectors based on a vocabulary.
+    Maps sentences and labels to vectors based on a vocabulary.
     """
-    def get_index_of_voca(model, word):
-        try:
-            return model[word]
-        except:
-            return np.array([np.float32(0.0)]*400)
+    def get_index_of_voca(w2vmodel, lexiconModel, word):
 
-    x = np.array([[get_index_of_voca(w2vmodel,word) for word in sentence] for sentence in sentences])
+        if word in w2vmodel:
+            word2vecList = w2vmodel[word]
+        else:
+            word2vecList = np.array([np.float32(0.0)]*400)
+
+        if word in lexiconModel[0]:
+            lexiconList1 = np.array([np.float32(lexiconModel[0][word])]*1)
+        else:
+            lexiconList1 = np.array([np.float32(0.0)]*1)
+
+        if word in lexiconModel[1]:
+            lexiconList2 = np.array([np.float32(lexiconModel[1][word])]*1)
+        else:
+            lexiconList2 = np.array([np.float32(0.0)]*1)
+
+        if useLexicon:
+            result = np.append(word2vecList, lexiconList1)
+            result = np.append(result, lexiconList2)
+            return result
+        else:
+            return word2vecList
+
+    x = np.array([[get_index_of_voca(w2vmodel, lexiconModel ,word) for word in sentence] for sentence in sentences])
     y = np.array(labels)
     return [x, y]
 
 
-def load_data(dataset, w2vmodel, padlen=None):
+def load_data(dataset, w2vmodel, lexiconModel, useLexicon, padlen=None):
     """
     Loads and preprocessed data for the MR dataset.
     Returns input vectors, labels, vocabulary, and inverse vocabulary.
@@ -120,7 +138,7 @@ def load_data(dataset, w2vmodel, padlen=None):
     sentences, labels = load_data_and_labels(dataset)
     sentences_padded = pad_sentences(sentences, padlen)
 
-    x, y = build_input_data_with_w2v(sentences_padded, labels, w2vmodel)
+    x, y = build_input_data_with_w2v(sentences_padded, labels, w2vmodel, lexiconModel, useLexicon)
     return [x, y]
 
 

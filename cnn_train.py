@@ -13,12 +13,15 @@ import time
 import gc
 
 import csv
+import re
 
 # Parameters
 # ==================================================
 
 # Model Hyperparameters
-tf.flags.DEFINE_integer("embedding_dim", 400, "Dimensionality of character embedding (default: 128)")
+tf.flags.DEFINE_integer("embedding_dim", 402, "Dimensionality of character embedding (default: 128)")
+tf.flags.DEFINE_boolean("use_lexicon", True, "Set to use lexicon information. If False, set embedding_dim to 400")
+
 tf.flags.DEFINE_string("filter_sizes", "2,3,4,5", "Comma-separated filter sizes (default: '3,4,5')")
 tf.flags.DEFINE_integer("num_filters", 512, "Number of filters per filter size (default: 128)")
 tf.flags.DEFINE_float("dropout_keep_prob", 0.7, "Dropout keep probability (default: 0.5)")
@@ -34,8 +37,8 @@ tf.flags.DEFINE_integer("checkpoint_every", 10000, "Save model after this many s
 tf.flags.DEFINE_boolean("allow_soft_placement", True, "Allow device soft device placement")
 tf.flags.DEFINE_boolean("log_device_placement", False, "Log placement of ops on devices")
 tf.flags.DEFINE_float("learning_rate", 1e-3, "Learning rate (default: 1e-3)")
-tf.flags.DEFINE_boolean("random_seed", False, "Set to False to have same output everytime")
-tf.flags.DEFINE_integer("seed_number", 1234, "Seed number to use when using same random seed")
+tf.flags.DEFINE_boolean("random_seed", True, "Set to False to have same output everytime")
+tf.flags.DEFINE_integer("seed_number", 0, "Seed number to use when using same random seed")
 
 FLAGS = tf.flags.FLAGS
 FLAGS._parse_flags()
@@ -70,17 +73,35 @@ class Timer(object):
 
 def load_w2v():
     model_path='./word2vec_twitter_model.bin'
-    with Timer("load w2v"):
+    with Timer("loaded w2v"):
         model = Word2Vec.load_word2vec_format(model_path, binary=True)
         print("The vocabulary size is: " + str(len(model.vocab)))
 
     return model
 
+def load_lexicon_unigram():
+    everything_unigram_path='./lexicon_data/Eunigram.txt'
+    hashtag_unigram_path='./lexicon_data/unigrams-pmilexicon.txt'
+    everything_unigram_model = dict()
+    hashtag_unigram_model = dict()
+    with Timer("loaded unigram lexicon"):
+        with open(everything_unigram_path, 'r') as input1:
+            for line in input1:
+                temp = re.split(r'\t', line)
+                everything_unigram_model[temp[0]] = temp[1]
+        with open(hashtag_unigram_path, 'r') as input2:
+            for line in input2:
+                temp = re.split(r'\t', line)
+                hashtag_unigram_model[temp[0]] = temp[1]
 
+    return [everything_unigram_model, hashtag_unigram_model]
+
+unigram_lexicon_model = load_lexicon_unigram()
 w2vmodel = load_w2v()
-x_train, y_train = cnn_data_helpers.load_data('trnTokenized.tsv',w2vmodel , max_len)
-x_dev, y_dev = cnn_data_helpers.load_data('devTokenized.tsv', w2vmodel, max_len)
-x_test, y_test  = cnn_data_helpers.load_data('tstTokenized.tsv', w2vmodel, max_len)
+
+x_train, y_train = cnn_data_helpers.load_data('trnTokenized.tsv',w2vmodel, unigram_lexicon_model,FLAGS.use_lexicon, max_len)
+x_dev, y_dev = cnn_data_helpers.load_data('devTokenized.tsv', w2vmodel, unigram_lexicon_model, FLAGS.use_lexicon, max_len)
+x_test, y_test  = cnn_data_helpers.load_data('tstTokenized.tsv', w2vmodel, unigram_lexicon_model, FLAGS.use_lexicon, max_len)
 del(w2vmodel)
 gc.collect()
 
@@ -171,11 +192,11 @@ with tf.Graph().as_default():
                 feed_dict)
             time_str = datetime.datetime.now().isoformat()
             # print("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
-            print("{}: step {}, loss {:g}, acc {:g}, neg_r {:g} neg_p {:g} f1_neg {:g}, f1_pos {:g}, f1 {:g}".
-                  format(time_str, step, loss, accuracy, neg_r, neg_p, f1_neg, f1_pos, avg_f1))
+            #print("{}: step {}, loss {:g}, acc {:g}, neg_r {:g} neg_p {:g} f1_neg {:g}, f1_pos {:g}, f1 {:g}".
+             #     format(time_str, step, loss, accuracy, neg_r, neg_p, f1_neg, f1_pos, avg_f1))
             train_summary_writer.add_summary(summaries, step)
 
-        def dev_step(x_batch, y_batch, writer=None, lowerbound=57.5):
+        def step(stepType,x_batch, y_batch, writer=None, lowerbound=57.5):
             """
             Evaluates model on a dev set
             """
@@ -189,8 +210,8 @@ with tf.Graph().as_default():
                  cnn.neg_r, cnn.neg_p, cnn.f1_neg, cnn.f1_pos, cnn.avg_f1],
                 feed_dict)
             time_str = datetime.datetime.now().isoformat()
-            print("{}: step {}, loss {:g}, acc {:g}, neg_r {:g} neg_p {:g} f1_neg {:g}, f1_pos {:g}, f1 {:g}".
-                  format(time_str, step, loss, accuracy, neg_r, neg_p, f1_neg, f1_pos, avg_f1))
+            print("{}, {}: step {}, loss {:g}, acc {:g}, neg_r {:g} neg_p {:g} f1_neg {:g}, f1_pos {:g}, f1 {:g}".
+                  format(stepType, time_str, step, loss, accuracy, neg_r, neg_p, f1_neg, f1_pos, avg_f1))
             if writer:
                 writer.add_summary(summaries, step)
 
@@ -213,8 +234,8 @@ with tf.Graph().as_default():
             current_step = tf.train.global_step(sess, global_step)
             if current_step % FLAGS.evaluate_every == 0:
                 print("\nEvaluation:")
-                dev_step(x_dev, y_dev, writer=dev_summary_writer)
-                dev_step(x_test, y_test, writer=dev_summary_writer)
+                step("DEV", x_dev, y_dev, writer=dev_summary_writer)
+                step("TEXT", x_test, y_test, writer=dev_summary_writer)
                 '''
                 if dev_step(x_dev, y_dev, writer=dev_summary_writer) is True:
                     path = saver.save(sess, checkpoint_prefix, global_step=current_step)

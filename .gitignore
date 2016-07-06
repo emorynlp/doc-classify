@@ -1,4 +1,5 @@
 txt/
 runs/
+lexicon-data/
 .DS_Store
 word2vec_twitter_model.bin
