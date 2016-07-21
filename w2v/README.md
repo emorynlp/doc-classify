@@ -13,6 +13,9 @@ gensim<br>
 1. After installing all the requirements, clone this repository.<br>
 2. Download Twitter W2V Bin File: http://yuca.test.iminds.be:8900/fgodin/downloads/word2vec_twitter_model.tar.gz. Unzip it. Find "word2vec_twitter_model.bin" inside the unzipped folder. Place this .bin inside doc-classify foler.<br>
 3. Create a folder called "txt" and put your training, dev, test data inside this folder.<br>
-4. Run python cnn_train.py to train.<br>
-5. Run python cnn_test.py to evaluate using test set<br>
+4. Create a folder called "lexicon_data" and put your lexicon data in there. Name EverythingUnigram as "Eunigram.txt" and HashTagUnigram as "unigrams-pmilexicon.txt"
+5. Run python cnn_train.py to train.<br>
+6. Run python cnn_test.py to evaluate using test set<br>
 -> tensorflow will save model inside "runs" folder's subdirectory's "checkpoints" folder. Open cnn_test.py and specift the path of the model you want to evalutate (line 82). 
+
+<b>NOTE: For some reason, adding lexicon score dropped F1 score. Maybe some form of Normalization required?</b>
