@@ -1,0 +1,139 @@
+Parameters:
+ALLOW_SOFT_PLACEMENT=True
+BATCH_SIZE=64
+CHECKPOINT_EVERY=10000
+DROPOUT_KEEP_PROB=0.7
+EMBEDDING_DIM=2
+EVALUATE_EVERY=100
+FILTER_SIZES=2,3,4,5
+L2_REG_LAMBDA=2.0
+LEARNING_RATE=0.001
+LOG_DEVICE_PLACEMENT=False
+NUM_EPOCHS=50
+NUM_FILTERS=512
+RANDOM_SEED=False
+SEED_NUMBER=1234
+TEST_EVERY=100000
+USE_LEXICON=True
+
+Loading data...
+[loaded unigram lexicon] Elapsed: 0.11413192749
+The vocabulary size is: 3039345
+[loaded w2v] Elapsed: 48.7683720589
+Train/Dev split: 12475/4496
+Writing to /home/tlee/doc-classify/runs/1467782184
+
+
+Evaluation:
+DEV: 2016-07-06T01:16:31.876530: step 100, loss 1.25511, acc 0.491548, neg_r 0.338573 neg_p 0.381471 f1_neg 35.8739, f1_pos 58.0544, f1 46.9642
+TEST: 2016-07-06T01:16:34.630358: step 100, loss 1.27008, acc 0.512263, neg_r 0.367998 neg_p 0.373664 f1_neg 37.0804, f1_pos 55.6526, f1 46.3665
+
+
+Evaluation:
+DEV: 2016-07-06T01:16:41.117098: step 200, loss 1.09145, acc 0.52113, neg_r 0.19468 neg_p 0.496914 f1_neg 27.9753, f1_pos 61.9385, f1 44.9569
+TEST: 2016-07-06T01:16:43.985249: step 200, loss 1.07788, acc 0.524816, neg_r 0.196224 neg_p 0.478852 f1_neg 27.8371, f1_pos 56.4882, f1 42.1627
+
+
+Evaluation:
+DEV: 2016-07-06T01:16:50.692504: step 300, loss 1.48637, acc 0.392126, neg_r 0.0290206 neg_p 0.521739 f1_neg 5.49818, f1_pos 0.104438, f1 2.80131
+TEST: 2016-07-06T01:16:53.433339: step 300, loss 1.26806, acc 0.501987, neg_r 0.0297122 neg_p 0.497409 f1_neg 5.60737, f1_pos nan, f1 nan
+
+
+Evaluation:
+DEV: 2016-07-06T01:16:59.874971: step 400, loss 1.05254, acc 0.500667, neg_r 0.441354 neg_p 0.370183 f1_neg 40.2643, f1_pos 58.9055, f1 49.5849
+TEST: 2016-07-06T01:17:02.667840: step 400, loss 1.04, acc 0.51454, neg_r 0.45961 neg_p 0.365583 f1_neg 40.7235, f1_pos 55.723, f1 48.2232
+
+
+Evaluation:
+DEV: 2016-07-06T01:17:09.328200: step 500, loss 1.10218, acc 0.495552, neg_r 0.140266 neg_p 0.522523 f1_neg 22.116, f1_pos 58.4422, f1 40.2791
+TEST: 2016-07-06T01:17:12.087403: step 500, loss 1.09215, acc 0.505041, neg_r 0.142371 neg_p 0.501636 f1_neg 22.179, f1_pos 53.6198, f1 37.8994
+
+
+Evaluation:
+DEV: 2016-07-06T01:17:19.150384: step 600, loss 1.04513, acc 0.483763, neg_r 0.0290206 neg_p 0.615385 f1_neg 5.54264, f1_pos 48.2121, f1 26.8773
+TEST: 2016-07-06T01:17:21.931147: step 600, loss 0.990363, acc 0.556223, neg_r 0.0232126 neg_p 0.543478 f1_neg 4.45228, f1_pos 49.8434, f1 27.1479
+
+
+Evaluation:
+DEV: 2016-07-06T01:17:29.142009: step 700, loss 1.11875, acc 0.412811, neg_r 0.25393 neg_p 0.40856 f1_neg 31.3194, f1_pos 10.5777, f1 20.9486
+TEST: 2016-07-06T01:17:31.976354: step 700, loss 0.999091, acc 0.521568, neg_r 0.269576 neg_p 0.407772 f1_neg 32.4571, f1_pos 15.917, f1 24.1871
+
+
+Evaluation:
+DEV: 2016-07-06T01:17:38.703468: step 800, loss 1.07538, acc 0.492438, neg_r 0.541717 neg_p 0.356972 f1_neg 43.0351, f1_pos 61.5985, f1 52.3168
+TEST: 2016-07-06T01:17:41.541237: step 800, loss 1.10955, acc 0.476881, neg_r 0.519344 neg_p 0.324942 f1_neg 39.9757, f1_pos 56.7945, f1 48.3851
+
+
+Evaluation:
+DEV: 2016-07-06T01:17:48.172047: step 900, loss 1.02949, acc 0.495552, neg_r 0.274486 neg_p 0.449505 f1_neg 34.0836, f1_pos 57.519, f1 45.8013
+TEST: 2016-07-06T01:17:50.987144: step 900, loss 1.00825, acc 0.517546, neg_r 0.294336 neg_p 0.443357 f1_neg 35.379, f1_pos 54.1874, f1 44.7832
+
+
+Evaluation:
+DEV: 2016-07-06T01:17:57.660501: step 1000, loss 1.03837, acc 0.4375, neg_r 0.0399033 neg_p 0.6 f1_neg 7.48288, f1_pos 25.3422, f1 16.4125
+TEST: 2016-07-06T01:18:00.525697: step 1000, loss 0.966304, acc 0.54052, neg_r 0.0337357 neg_p 0.545 f1_neg 6.35372, f1_pos 30.7239, f1 18.5388
+
+
+Evaluation:
+DEV: 2016-07-06T01:18:07.252338: step 1100, loss 1.08469, acc 0.448621, neg_r 0.563482 neg_p 0.330731 f1_neg 41.6811, f1_pos 41.0664, f1 41.3738
+TEST: 2016-07-06T01:18:10.060334: step 1100, loss 1.03454, acc 0.512117, neg_r 0.557413 neg_p 0.304996 f1_neg 39.426, f1_pos 45.6142, f1 42.5201
+
+
+Evaluation:
+DEV: 2016-07-06T01:18:17.976595: step 1200, loss 0.994333, acc 0.49444, neg_r 0.494559 neg_p 0.375229 f1_neg 42.6703, f1_pos 57.4614, f1 50.0659
+TEST: 2016-07-06T01:18:20.746880: step 1200, loss 0.977069, acc 0.511439, neg_r 0.48437 neg_p 0.346622 f1_neg 40.4075, f1_pos 55.8095, f1 48.1085
+
+
+Evaluation:
+DEV: 2016-07-06T01:18:27.753820: step 1300, loss 1.09231, acc 0.471085, neg_r 0.0241838 neg_p 0.526316 f1_neg 4.62419, f1_pos 56.6984, f1 30.6613
+TEST: 2016-07-06T01:18:30.573855: step 1300, loss 1.1113, acc 0.472906, neg_r 0.0145466 neg_p 0.505376 f1_neg 2.82786, f1_pos 51.6728, f1 27.2503
+
+
+Evaluation:
+DEV: 2016-07-06T01:18:38.020443: step 1400, loss 0.970097, acc 0.510676, neg_r 0.168077 neg_p 0.516729 f1_neg 25.3646, f1_pos 57.6827, f1 41.5237
+TEST: 2016-07-06T01:18:40.985217: step 1400, loss 0.941011, acc 0.544785, neg_r 0.165583 neg_p 0.509524 f1_neg 24.9938, f1_pos 55.8635, f1 40.4287
+
+
+Evaluation:
+DEV: 2016-07-06T01:18:47.894016: step 1500, loss 0.982928, acc 0.499555, neg_r 0.145103 neg_p 0.458015 f1_neg 22.0382, f1_pos 58.3059, f1 40.1721
+TEST: 2016-07-06T01:18:50.869213: step 1500, loss 0.979862, acc 0.530729, neg_r 0.127824 neg_p 0.45838 f1_neg 19.99, f1_pos 55.9496, f1 37.9698
+
+
+Evaluation:
+DEV: 2016-07-06T01:18:57.458104: step 1600, loss 0.995616, acc 0.49911, neg_r 0.0302297 neg_p 0.555556 f1_neg 5.73385, f1_pos 54.0872, f1 29.9105
+TEST: 2016-07-06T01:19:00.235586: step 1600, loss 0.934457, acc 0.553654, neg_r 0.0253791 neg_p 0.561644 f1_neg 4.8563, f1_pos 53.9529, f1 29.4046
+
+
+Evaluation:
+DEV: 2016-07-06T01:19:07.942714: step 1700, loss 0.971829, acc 0.503781, neg_r 0.243047 neg_p 0.43319 f1_neg 31.1382, f1_pos 59.2137, f1 45.1759
+TEST: 2016-07-06T01:19:10.716864: step 1700, loss 0.962084, acc 0.525446, neg_r 0.194058 neg_p 0.383018 f1_neg 25.7596, f1_pos 56.769, f1 41.2643
+
+
+Evaluation:
+DEV: 2016-07-06T01:19:17.665754: step 1800, loss 0.976951, acc 0.505561, neg_r 0.309553 neg_p 0.428811 f1_neg 35.9546, f1_pos 55.385, f1 45.6698
+TEST: 2016-07-06T01:19:20.530815: step 1800, loss 0.936509, acc 0.543912, neg_r 0.337047 neg_p 0.422257 f1_neg 37.4866, f1_pos 53.6104, f1 45.5485
+
+
+Evaluation:
+DEV: 2016-07-06T01:19:27.309649: step 1900, loss 1.07672, acc 0.465525, neg_r 0.152358 neg_p 0.486486 f1_neg 23.2041, f1_pos 62.5165, f1 42.8603
+TEST: 2016-07-06T01:19:30.212850: step 1900, loss 1.14118, acc 0.383773, neg_r 0.11823 neg_p 0.46247 f1_neg 18.8313, f1_pos 53.3594, f1 36.0954
+
+
+Evaluation:
+DEV: 2016-07-06T01:19:37.323346: step 2000, loss 1.10129, acc 0.401913, neg_r 0.172914 neg_p 0.476667 f1_neg 25.3767, f1_pos 3.37765, f1 14.3772
+TEST: 2016-07-06T01:19:40.069446: step 2000, loss 0.98087, acc 0.507997, neg_r 0.187868 neg_p 0.479463 f1_neg 26.9954, f1_pos 3.64384, f1 15.3196
+
+
+Evaluation:
+DEV: 2016-07-06T01:19:48.189296: step 2100, loss 0.995296, acc 0.509786, neg_r 0.0362757 neg_p 0.508475 f1_neg 6.77188, f1_pos 61.9362, f1 34.3541
+TEST: 2016-07-06T01:19:51.072013: step 2100, loss 0.975097, acc 0.516479, neg_r 0.0235221 neg_p 0.550725 f1_neg 4.51165, f1_pos 57.1327, f1 30.8222
+
+
+Evaluation:
+DEV: 2016-07-06T01:19:57.901081: step 2200, loss 1.0113, acc 0.491326, neg_r 0.106409 neg_p 0.56051 f1_neg 17.8859, f1_pos 57.3819, f1 37.6339
+TEST: 2016-07-06T01:20:00.685793: step 2200, loss 0.976472, acc 0.506931, neg_r 0.11204 neg_p 0.547655 f1_neg 18.602, f1_pos 52.9964, f1 35.7992
+
+
+Evaluation:
+DEV: 2016-07-06T01:20:07.500295: step 2300, loss 0.983041, acc 0.510676, neg_r 0.0689238 neg_p 0.57 f1_neg 12.2975, f1_pos 61.6344, f1 36.966
+TEST: 2016-07-06T01:20:10.307292: step 2300, loss 0.961838, acc 0.518321, neg_r 0.0513773 neg_p 0.537217 f1_neg 9.37837, f1_pos 57.2674, f1 33.3229

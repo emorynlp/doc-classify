@@ -1,5 +1,6 @@
-txt/
-runs/
-lexicon-data/
-.DS_Store
-word2vec_twitter_model.bin
+w2v/txt/
+w2v/runs/
+w2v/lexicon-data/
+w2v/run.sh
+w2v/.DS_Store
+w2v/word2vec_twitter_model.bin
