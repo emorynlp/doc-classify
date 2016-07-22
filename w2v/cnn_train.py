@@ -19,8 +19,8 @@ import re
 # ==================================================
 
 # Model Hyperparameters
-tf.flags.DEFINE_integer("embedding_dim", 400, "Dimensionality of character embedding (default: 128)")
-tf.flags.DEFINE_boolean("use_lexicon", False, "Set to use lexicon information. If False, set embedding_dim to 400")
+tf.flags.DEFINE_integer("embedding_dim", 402, "Dimensionality of character embedding (default: 128)")
+tf.flags.DEFINE_boolean("use_lexicon", True, "Set to use lexicon information. If False, set embedding_dim to 400")
 
 tf.flags.DEFINE_string("filter_sizes", "2,3,4,5", "Comma-separated filter sizes (default: '3,4,5')")
 tf.flags.DEFINE_integer("num_filters", 256, "Number of filters per filter size (default: 128)")

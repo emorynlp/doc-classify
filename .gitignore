@@ -4,3 +4,9 @@ w2v/lexicon-data/
 w2v/run.sh
 w2v/.DS_Store
 w2v/word2vec_twitter_model.bin
+w2v_lex/txt/
+w2v_lex/runs/
+w2v_lex/lexicon-data/
+w2v_lex/run.sh
+w2v_lex/.DS_Store
+w2v_lex/word2vec_twitter_model.bin
