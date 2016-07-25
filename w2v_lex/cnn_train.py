@@ -20,6 +20,7 @@ import re
 
 # Model Hyperparameters
 tf.flags.DEFINE_integer("embedding_dim", 400, "Dimensionality of character embedding (default: 128)")
+tf.flags.DEFINE_integer("embedding_dim_lex", 2, "Dimensionality of character embedding from LEXICON")
 tf.flags.DEFINE_boolean("use_lexicon", False, "Set to use lexicon information. If False, set embedding_dim to 400")
 
 tf.flags.DEFINE_string("filter_sizes", "2,3,4,5", "Comma-separated filter sizes (default: '3,4,5')")
@@ -80,21 +81,16 @@ def load_w2v():
     return model
 
 def load_lexicon_unigram():
-    everything_unigram_path='./lexicon_data/Eunigram.txt'
-    hashtag_unigram_path='./lexicon_data/unigrams-pmilexicon.txt'
-    everything_unigram_model = dict()
-    hashtag_unigram_model = dict()
+    file_path = ["./lexicon_data/"+files for files in os.listdir("./lexicon_data") if files.endswith(".txt")]
+    model = [dict() for x in range(len(file_path))]
     with Timer("loaded unigram lexicon"):
-        with open(everything_unigram_path, 'r') as input1:
-            for line in input1:
-                temp = re.split(r'\t', line)
-                everything_unigram_model[temp[0]] = temp[1]
-        with open(hashtag_unigram_path, 'r') as input2:
-            for line in input2:
-                temp = re.split(r'\t', line)
-                hashtag_unigram_model[temp[0]] = temp[1]
+        for index, each_model in enumerate(model):
+            with open(file_path[index], 'r') as document:
+                for line in document:
+                    line_token = re.split(r'\t', line)
+                    model[index][line_token[0]] = line_token[1]
 
-    return [everything_unigram_model, hashtag_unigram_model]
+    return [each_model for each_model in model]
 
 unigram_lexicon_model = load_lexicon_unigram()
 w2vmodel = load_w2v()
@@ -122,6 +118,7 @@ with tf.Graph().as_default():
             sequence_length=x_train.shape[1],
             num_classes=3,
             embedding_size=FLAGS.embedding_dim,
+            embedding_size_lex=FLAGS.embedding_dim_lex,
             filter_sizes=list(map(int, FLAGS.filter_sizes.split(","))),
             num_filters=FLAGS.num_filters,
             l2_reg_lambda=FLAGS.l2_reg_lambda 

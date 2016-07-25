@@ -9,7 +9,7 @@ class TextCNN(object):
     """
     def __init__(
       self, sequence_length, num_classes,
-      embedding_size, filter_sizes, num_filters, embedding_size_lex=2, l2_reg_lambda=0.0):
+      embedding_size, filter_sizes, num_filters, embedding_size_lex, l2_reg_lambda=0.0):
 
         # Placeholders for input, output and dropout
         self.input_x = tf.placeholder(tf.float32, [None, sequence_length, embedding_size], name="input_x")
@@ -86,8 +86,6 @@ class TextCNN(object):
         num_filters_total = num_filters * len(filter_sizes) * 2
         self.h_pool = tf.concat(3, pooled_outputs)
         self.h_pool_flat = tf.reshape(self.h_pool, [-1, num_filters_total])
-        print ("PRINTING POOL FLAT")
-        print (self.h_pool_flat)
         # Add dropout
         with tf.name_scope("dropout"):
             self.h_drop = tf.nn.dropout(self.h_pool_flat, self.dropout_keep_prob)

@@ -95,11 +95,13 @@ def build_input_data_with_w2v(sentences, labels, w2vmodel, lexiconModel, useLexi
     """
     def get_index_of_voca(w2vmodel, lexiconModel, word):
 
+        #WORD2VEC MODEL
         if word in w2vmodel:
             word2vecList = w2vmodel[word]
         else:
             word2vecList = np.array([np.float32(0.0)]*400)
 
+        #LEXICON MODEL
         if word in lexiconModel[0]:
             lexiconList1 = np.array([np.float32(lexiconModel[0][word])]*1)
         else:
