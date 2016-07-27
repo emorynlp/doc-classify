@@ -2,6 +2,7 @@ import sys
 import os
 
 tempList = [files for files in os.listdir("./") if files.endswith(".txt")]
+tempList.sort()
 max_test = 0
 max_test_name = ''
 
