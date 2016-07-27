@@ -7,27 +7,7 @@ import csv
 
 
 def clean_str(string):
-    """
-    Tokenization/string cleaning for all datasets except for SST.
-    Original taken from https://github.com/yoonkim/CNN_sentence/blob/master/process_data.py
-    """
-    """
-    string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", string)
-    string = re.sub(r"\'s", " \'s", string)
-    string = re.sub(r"\'ve", " \'ve", string)
-    string = re.sub(r"n\'t", " n\'t", string)
-    string = re.sub(r"\'re", " \'re", string)
-    string = re.sub(r"\'d", " \'d", string)
-    string = re.sub(r"\'ll", " \'ll", string)
-    string = re.sub(r",", " , ", string)
-    string = re.sub(r"!", " ! ", string)
-    string = re.sub(r"\(", " \( ", string)
-    string = re.sub(r"\)", " \) ", string)
-    string = re.sub(r"\?", " \? ", string)
-    string = re.sub(r"\s{2,}", " ", string)
-    """
     return string.strip().lower()
-
 
 def load_data_and_labels(dataset):
 
@@ -93,7 +73,7 @@ def build_input_data_with_w2v(sentences, labels, w2vmodel, lexiconModel, useLexi
     """
     Maps sentences and labels to vectors based on a vocabulary.
     """
-    def get_index_of_voca(w2vmodel, lexiconModel, word):
+    def get_index_of_voca(w2vmodel, word):
 
         #WORD2VEC MODEL
         if word in w2vmodel:
@@ -101,40 +81,22 @@ def build_input_data_with_w2v(sentences, labels, w2vmodel, lexiconModel, useLexi
         else:
             word2vecList = np.array([np.float32(0.0)]*400)
 
-        #LEXICON MODEL
-        if word in lexiconModel[0]:
-            lexiconList1 = np.array([np.float32(lexiconModel[0][word])]*1)
-        else:
-            lexiconList1 = np.array([np.float32(0.0)]*1)
-
-        if word in lexiconModel[1]:
-            lexiconList2 = np.array([np.float32(lexiconModel[1][word])]*1)
-        else:
-            lexiconList2 = np.array([np.float32(0.0)]*1)
-
-        if useLexicon:
-            result = np.append(word2vecList, lexiconList1)
-            result = np.append(result, lexiconList2)
-            return result
-        else:
-            return word2vecList
+        return word2vecList
 
     def get_index_of_vocab_lex(lexiconModel, word):
-        if word in lexiconModel[0]:
-            lexiconList1 = np.array([np.float32(lexiconModel[0][word])]*1)
-        else:
-            lexiconList1 = np.array([np.float32(0.0)]*1)
 
-        if word in lexiconModel[1]:
-            lexiconList2 = np.array([np.float32(lexiconModel[1][word])]*1)
-        else:
-            lexiconList2 = np.array([np.float32(0.0)]*1)
+        lexiconList = np.empty([0,1])
+        for index, eachModel in enumerate(lexiconModel):
+            if word in eachModel:
+                temp = np.array([np.float32(eachModel[word])])
+            else:
+                temp = np.array([np.float32(0.0)])
+            lexiconList = np.append(lexiconList, temp)
 
-        result = np.append(lexiconList1, lexiconList2)
-        return result
+        return lexiconList
 
 
-    x = np.array([[get_index_of_voca(w2vmodel, lexiconModel ,word) for word in sentence] for sentence in sentences])
+    x = np.array([[get_index_of_voca(w2vmodel,word) for word in sentence] for sentence in sentences])
     x_lex = np.array([[get_index_of_vocab_lex(lexiconModel ,word) for word in sentence] for sentence in sentences])
     y = np.array(labels)
     return [x, y, x_lex]
@@ -148,10 +110,7 @@ def load_data(dataset, w2vmodel, lexiconModel, useLexicon, padlen=None):
     # Load and preprocess data
     sentences, labels = load_data_and_labels(dataset)
     sentences_padded = pad_sentences(sentences, padlen)
-
     #print ("MAX LENGTH:", len(max(sentences, key=len))) #45
-
-
     x, y , x_lex = build_input_data_with_w2v(sentences_padded, labels, w2vmodel, lexiconModel, useLexicon)
     return [x, y, x_lex]
 
@@ -168,9 +127,7 @@ def batch_iter(data, batch_size, num_epochs, shuffle=True):
 
     for epoch in range(num_epochs):
         # Shuffle the data at each epoch
-
         if shuffle:
-
             shuffle_indices = np.random.permutation(np.arange(data_size))
             shuffled_data = data[shuffle_indices]
         else:
