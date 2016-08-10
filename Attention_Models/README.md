@@ -3,8 +3,8 @@ Both are using for lexicon implementations
 
 ## Instructions
 Note: Have not yet seen good results. <br>
+
 1. Just replace your text_cnn.py.
-<br>
 
 
 ## In development
