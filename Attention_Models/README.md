@@ -2,7 +2,8 @@
 Note: Both are using for lexicon implementations
 
 ## Instructions
-1. Just replace your text_cnn.py. <br>
+1. Just replace your text_cnn.py.
+<br>
 Note: Have not yet seen good results. 
 
 ## In development
