@@ -25,13 +25,12 @@ from tensorflow.contrib import learn
 # ==================================================
 
 # Model Hyperparameters
-tf.flags.DEFINE_string("filter_sizes", "3,4,5", "Comma-separated filter sizes (default: '3,4,5')")
-tf.flags.DEFINE_float("dropout_keep_prob", 0.5, "Dropout keep probability (default: 0.5)")
+tf.flags.DEFINE_string("filter_sizes", "2,3,4,5", "Comma-separated filter sizes (default: '3,4,5')")
+tf.flags.DEFINE_float("dropout_keep_prob", 0.8, "Dropout keep probability (default: 0.5)")
 tf.flags.DEFINE_float("l2_reg_lambda", 2.0, "L2 regularizaion lambda (default: 0.0)")
 
 # Training parameters
 tf.flags.DEFINE_integer("batch_size", 64, "Batch Size (default: 64)")
-tf.flags.DEFINE_integer("num_epochs", 75, "Number of training epochs (default: 200)")
 tf.flags.DEFINE_integer("evaluate_every", 100, "Evaluate model on dev set after this many steps (default: 100)")
 tf.flags.DEFINE_integer("test_every", 100000, "Evaluate model on test set after this many steps (default: 100)")
 tf.flags.DEFINE_integer("checkpoint_every", 10000, "Save model after this many steps (default: 100)")
@@ -156,7 +155,7 @@ def load_lexicon_unigram(lexdim):
 
     return norm_model, raw_model
 
-def run_train(w2vsource, w2vdim, w2vnumfilters, lexdim, lexnumfilters, randomseed, datasource, model_name, trainable, is_expanded):
+def run_train(w2vsource, w2vdim, w2vnumfilters, lexdim, lexnumfilters, randomseed, datasource, model_name, trainable, the_epoch):
 
     np.random.seed(randomseed)
     max_len = 60
@@ -317,7 +316,7 @@ def run_train(w2vsource, w2vdim, w2vnumfilters, lexdim, lexnumfilters, randomsee
 
 
             # initial matrix with random uniform
-            initW = np.random.uniform(-0.25,0.25,(total_vocab_size, w2vdim))
+            initW = np.random.uniform(0.0,0.0,(total_vocab_size, w2vdim))
             initW_lex = np.random.uniform(0.00,0.2,(total_vocab_size, lexdim))
             # load any vectors from the word2vec
             with Timer("LOADING W2V..."):
@@ -435,7 +434,7 @@ def run_train(w2vsource, w2vdim, w2vnumfilters, lexdim, lexnumfilters, randomsee
 
             # Generate batches
             batches = cnn_data_helpers.batch_iter(
-                list(zip(x_train, y_train)), FLAGS.batch_size, FLAGS.num_epochs)
+                list(zip(x_train, y_train)), FLAGS.batch_size, the_epoch)
 
             # Training loop. For each batch...
             for batch in batches:
@@ -479,15 +478,15 @@ if __name__ == "__main__":
     parser.add_argument('--datasource', default='semeval', choices=['semeval','sst'], type=str)
     parser.add_argument('--model', default='w2v_lex', choices=['w2v', 'w2v_lex'], type=str) # w2v, w2vlex, attention
     parser.add_argument('--trainable', default='nonstatic', choices=['static', 'nonstatic'], type=str) # w2v, w2vlex, attention
-    parser.add_argument('--expanded', default=0, choices=[0,1,2,3,4,5,6,7], type=int)
+    parser.add_argument('--epoches', default=30, type=int)
 
     args = parser.parse_args()
     program = os.path.basename(sys.argv[0])
 
     print 'ADDITIONAL PARAMETER\n w2vsource: %s\n w2vdim: %d\n w2vnumfilters: %d\n lexdim: %d\n lexnumfilters: %d\n ' \
-          'randomseed: %d\n data_source: %s\n model_name: %s\n trainable: %s\n expanded: %d' \
+          'randomseed: %d\n data_source: %s\n model_name: %s\n trainable: %s\n epoch: %d' \
           % (args.w2vsource, args.w2vdim, args.w2vnumfilters, args.lexdim, args.lexnumfilters, args.randomseed, args.datasource,
-             args.model, args.trainable, args.expanded)
+             args.model, args.trainable, args.epoches)
 
     run_train(args.w2vsource, args.w2vdim, args.w2vnumfilters, args.lexdim, args.lexnumfilters, args.randomseed,
-              args.datasource, args.model, args.trainable, args.expanded)
+              args.datasource, args.model, args.trainable, args.epoches)
