@@ -10,4 +10,5 @@ w2v_lex/lexicon-data/
 w2v_lex/run.sh
 w2v_lex/.DS_Store
 w2v_lex/word2vec_twitter_model.bin
+data/
 .DS_Store
