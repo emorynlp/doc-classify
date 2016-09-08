@@ -162,47 +162,37 @@ def run_train(w2vsource, w2vdim, w2vnumfilters, lexdim, lexnumfilters, randomsee
     norm_model = []
 
     with Timer("lex"):
-        if is_expanded == 0:
-            print 'old way of loading lexicon'
-            norm_model, raw_model = load_lexicon_unigram(lexdim)
+        print 'new way of loading lexicon'
+        default_vector_dic = {'EverythingUnigramsPMIHS': [0],
+                              'HS-AFFLEX-NEGLEX-unigrams': [0, 0, 0],
+                              'Maxdiff-Twitter-Lexicon_0to1': [0.5],
+                              'S140-AFFLEX-NEGLEX-unigrams': [0, 0, 0],
+                              'unigrams-pmilexicon': [0, 0, 0],
+                              'unigrams-pmilexicon_sentiment_140': [0, 0, 0],
+                              'BL': [0]}
+
+        lexfile_list = ['EverythingUnigramsPMIHS.pickle',
+                        'HS-AFFLEX-NEGLEX-unigrams.pickle',
+                        'Maxdiff-Twitter-Lexicon_0to1.pickle',
+                        'S140-AFFLEX-NEGLEX-unigrams.pickle',
+                        'unigrams-pmilexicon.pickle',
+                        'unigrams-pmilexicon_sentiment_140.pickle',
+                        'BL.pickle']
 
 
-        else:
-            print 'new way of loading lexicon'
-            default_vector_dic = {'EverythingUnigramsPMIHS': [0],
-                                  'HS-AFFLEX-NEGLEX-unigrams': [0, 0, 0],
-                                  'Maxdiff-Twitter-Lexicon_0to1': [0.5],
-                                  'S140-AFFLEX-NEGLEX-unigrams': [0, 0, 0],
-                                  'unigrams-pmilexicon': [0, 0, 0],
-                                  'unigrams-pmilexicon_sentiment_140': [0, 0, 0],
-                                  'BL': [0]}
+        for idx, lexfile in enumerate(lexfile_list):
+            fname = '../data/le/%s' % lexfile
+            print 'default lexicon for %s' % lexfile
 
-            lexfile_list = ['EverythingUnigramsPMIHS.pickle',
-                            'HS-AFFLEX-NEGLEX-unigrams.pickle',
-                            'Maxdiff-Twitter-Lexicon_0to1.pickle',
-                            'S140-AFFLEX-NEGLEX-unigrams.pickle',
-                            'unigrams-pmilexicon.pickle',
-                            'unigrams-pmilexicon_sentiment_140.pickle',
-                            'BL.pickle']
-
-
-            for idx, lexfile in enumerate(lexfile_list):
-                if is_expanded-1 == idx:
-                    fname = '../data/le/exp_%s' % lexfile
-                    print 'expanded lexicon for %s' % lexfile
-
-                else:
-                    fname = '../data/le/%s' % lexfile
-                    print 'default lexicon for %s' % lexfile
-
-                with open(fname, 'rb') as handle:
-                    each_model = pickle.load(handle)
-                    default_vector = default_vector_dic[lexfile.replace('.pickle', '')]
-                    each_model["<PAD/>"] = default_vector
-                    norm_model.append(each_model)
+            with open(fname, 'rb') as handle:
+                each_model = pickle.load(handle)
+                default_vector = default_vector_dic[lexfile.replace('.pickle', '')]
+                each_model["<PAD/>"] = default_vector
+                norm_model.append(each_model)
 
     
     unigram_lexicon_model = norm_model
+
 
     # CONFIGURE
     # ==================================================
@@ -231,15 +221,13 @@ def run_train(w2vsource, w2vdim, w2vnumfilters, lexdim, lexnumfilters, randomsee
         vocab_processor.fit_transform(x_text)
         total_vocab_size = len(vocab_processor.vocabulary_)
 
-        if model_name == 'w2v':
-            x_train, y_train = cnn_data_helpers.load_data_trainable("trn", rottenTomato=use_rotten_tomato)
-            x_dev, y_dev = cnn_data_helpers.load_data_trainable("dev", rottenTomato=use_rotten_tomato)
-            x_test, y_test = cnn_data_helpers.load_data_trainable("tst", rottenTomato=use_rotten_tomato)
-            x_train = np.array(list(vocab_processor.fit_transform(x_train)))
-            x_dev = np.array(list(vocab_processor.fit_transform(x_dev)))
-            x_test = np.array(list(vocab_processor.fit_transform(x_test)))
-        else:
-            sys.exit("ATTEMPTING TO USE LEXICON")
+        x_train, y_train = cnn_data_helpers.load_data_trainable("trn", rottenTomato=use_rotten_tomato)
+        x_dev, y_dev = cnn_data_helpers.load_data_trainable("dev", rottenTomato=use_rotten_tomato)
+        x_test, y_test = cnn_data_helpers.load_data_trainable("tst", rottenTomato=use_rotten_tomato)
+        x_train = np.array(list(vocab_processor.fit_transform(x_train)))
+        x_dev = np.array(list(vocab_processor.fit_transform(x_dev)))
+        x_test = np.array(list(vocab_processor.fit_transform(x_test)))
+
 
 
         del(norm_model)
@@ -256,28 +244,19 @@ def run_train(w2vsource, w2vdim, w2vnumfilters, lexdim, lexnumfilters, randomsee
             if randomseed > 0:
                 tf.set_random_seed(randomseed)
 
-            if model_name=='w2v':
-                cnn = W2V_TRAINABLE(
-                    sequence_length=x_train.shape[1],
-                    num_classes=numberofclass,
-                    vocab_size=len(vocab_processor.vocabulary_),
-                    is_trainable=trainable,
-                    embedding_size=w2vdim,
-                    filter_sizes=list(map(int, FLAGS.filter_sizes.split(","))),
-                    num_filters=w2vnumfilters,
-                    l2_reg_lambda=FLAGS.l2_reg_lambda
-                )
-
-            elif model_name=='w2vlex':
-                cnn = W2V_LEX_CNN(
-                    sequence_length=x_train.shape[1],
-                    num_classes=numberofclass,
-                    embedding_size=w2vdim,
-                    embedding_size_lex=lexdim,
-                    num_filters_lex=lexnumfilters,
-                    filter_sizes=list(map(int, FLAGS.filter_sizes.split(","))),
-                    num_filters=w2vnumfilters,
-                    l2_reg_lambda=FLAGS.l2_reg_lambda)
+            cnn = W2V_TRAINABLE(
+                sequence_length=x_train.shape[1],
+                num_classes=numberofclass,
+                vocab_size=len(vocab_processor.vocabulary_),
+                is_trainable=trainable,
+                embedding_size=w2vdim,
+                filter_sizes=list(map(int, FLAGS.filter_sizes.split(","))),
+                num_filters=w2vnumfilters,
+                embedding_size_lex=lexdim,
+                num_filters_lex=lexnumfilters,
+                themodel=model_name,
+                l2_reg_lambda=FLAGS.l2_reg_lambda
+            )
            
             # Define Training procedure
             global_step = tf.Variable(0, name="global_step", trainable=False)
@@ -337,10 +316,12 @@ def run_train(w2vsource, w2vdim, w2vnumfilters, lexdim, lexnumfilters, randomsee
 
 
             # initial matrix with random uniform
-            initW = np.random.uniform(-0.00,0.00,(total_vocab_size, w2vdim))
+            initW = np.random.uniform(-0.25,0.25,(total_vocab_size, w2vdim))
+            initW_lex = np.random.uniform(0.00,0.2,(total_vocab_size, lexdim))
             # load any vectors from the word2vec
-            with Timer("w2v"):
-                print("Load word2vec file {} \n".format(the_model_path))
+            with Timer("LOADING W2V..."):
+                print("LOADING word2vec file {} \n".format(the_model_path))
+                #W2V
                 with open(the_model_path, "rb") as f:
                     header = f.readline()
                     vocab_size, layer1_size = map(int, header.split())
@@ -359,28 +340,42 @@ def run_train(w2vsource, w2vdim, w2vnumfilters, lexdim, lexnumfilters, randomsee
                             #print str(idx) + " -> " + word
                             initW[idx] = np.fromstring(f.read(binary_len), dtype='float32') 
                         else:
-                            f.read(binary_len)    
+                            f.read(binary_len) 
+            with Timer("LOADING LEXICON..."):
+                vocabulary_set = set()
+                for index, eachModel in enumerate(unigram_lexicon_model):
+                    for word in eachModel:
+                        vocabulary_set.add(word)
+
+                for word in vocabulary_set:
+                    lexiconList = np.empty([0, 1])
+                    for index, eachModel in enumerate(unigram_lexicon_model):
+                        if word in eachModel:
+                            temp = np.array(np.float32(eachModel[word]))
+                        else:
+                            temp = np.array(np.float32(eachModel["<PAD/>"]))
+                        lexiconList = np.append(lexiconList, temp)
+
+                    idx = vocab_processor.vocabulary_.get(word)
+                    if idx != 0:
+                        initW_lex[idx] = lexiconList
+
+
+
 
             sess.run(cnn.W.assign(initW))
+            if model_name == 'w2v_lex':
+                sess.run(cnn.W_lex.assign(initW_lex))
 
-            def train_step(x_batch, y_batch, x_batch_lex=None):
+            def train_step(x_batch, y_batch):
                 """
                 A single training step
                 """
-                if x_batch_lex != None:
-                    feed_dict = {
-                        cnn.input_x: x_batch,
-                        cnn.input_y: y_batch,
-                        # lexicon
-                        cnn.input_x_lexicon: x_batch_lex,
-                        cnn.dropout_keep_prob: FLAGS.dropout_keep_prob
-                    }
-                else: 
-                    feed_dict = {
-                        cnn.input_x: x_batch,
-                        cnn.input_y: y_batch,
-                        cnn.dropout_keep_prob: FLAGS.dropout_keep_prob
-                    }
+                feed_dict = {
+                    cnn.input_x: x_batch,
+                    cnn.input_y: y_batch,
+                    cnn.dropout_keep_prob: FLAGS.dropout_keep_prob
+                }
                 _, step, summaries, loss, accuracy, neg_r, neg_p, f1_neg, f1_pos, avg_f1 = sess.run(
                     [train_op, global_step, train_summary_op, cnn.loss, cnn.accuracy,
                      cnn.neg_r, cnn.neg_p, cnn.f1_neg, cnn.f1_pos, cnn.avg_f1],
@@ -388,24 +383,15 @@ def run_train(w2vsource, w2vdim, w2vnumfilters, lexdim, lexnumfilters, randomsee
                 time_str = datetime.datetime.now().isoformat()
                 train_summary_writer.add_summary(summaries, step)
 
-            def dev_step(x_batch, y_batch, x_batch_lex=None, writer=None, score_type='f1'):
+            def dev_step(x_batch, y_batch, writer=None, score_type='f1'):
                 """
                 Evaluates model on a dev set
                 """
-                if x_batch_lex != None:
-                    feed_dict = {
-                        cnn.input_x: x_batch,
-                        cnn.input_y: y_batch,
-                        # lexicon
-                        cnn.input_x_lexicon: x_batch_lex,
-                        cnn.dropout_keep_prob: 1.0
-                    }
-                else: 
-                    feed_dict = {
-                        cnn.input_x: x_batch,
-                        cnn.input_y: y_batch,
-                        cnn.dropout_keep_prob: 1.0
-                    }
+                feed_dict = {
+                    cnn.input_x: x_batch,
+                    cnn.input_y: y_batch,
+                    cnn.dropout_keep_prob: 1.0
+                }
                 step, summaries, loss, accuracy, neg_r, neg_p, f1_neg, f1_pos, avg_f1 = sess.run(
                     [global_step, dev_summary_op, cnn.loss, cnn.accuracy,
                      cnn.neg_r, cnn.neg_p, cnn.f1_neg, cnn.f1_pos, cnn.avg_f1],
@@ -421,24 +407,16 @@ def run_train(w2vsource, w2vdim, w2vnumfilters, lexdim, lexnumfilters, randomsee
                 else:
                     return accuracy
 
-            def test_step(x_batch, y_batch, x_batch_lex=None, writer=None, score_type='f1'):
+            def test_step(x_batch, y_batch, writer=None, score_type='f1'):
                 """
                 Evaluates model on a test set
                 """
-                if x_batch_lex != None:
-                    feed_dict = {
-                        cnn.input_x: x_batch,
-                        cnn.input_y: y_batch,
-                        # lexicon
-                        cnn.input_x_lexicon: x_batch_lex,
-                        cnn.dropout_keep_prob: 1.0
-                    }
-                else: 
-                    feed_dict = {
-                        cnn.input_x: x_batch,
-                        cnn.input_y: y_batch,
-                        cnn.dropout_keep_prob: 1.0
-                    }
+
+                feed_dict = {
+                    cnn.input_x: x_batch,
+                    cnn.input_y: y_batch,
+                    cnn.dropout_keep_prob: 1.0
+                }
                 step, summaries, loss, accuracy, neg_r, neg_p, f1_neg, f1_pos, avg_f1 = sess.run(
                     [global_step, dev_summary_op, cnn.loss, cnn.accuracy,
                      cnn.neg_r, cnn.neg_p, cnn.f1_neg, cnn.f1_pos, cnn.avg_f1],
@@ -455,41 +433,28 @@ def run_train(w2vsource, w2vdim, w2vnumfilters, lexdim, lexnumfilters, randomsee
                     return accuracy
 
             # Generate batches
-            if model_name == 'w2v':
-                batches = cnn_data_helpers.batch_iter(
-                    list(zip(x_train, y_train)), FLAGS.batch_size, FLAGS.num_epochs)
-            elif model_name == 'w2v_lex':
-                batches = cnn_data_helpers.batch_iter(
-                    list(zip(x_train, y_train, x_lex_train)), FLAGS.batch_size, FLAGS.num_epochs)
+            batches = cnn_data_helpers.batch_iter(
+                list(zip(x_train, y_train)), FLAGS.batch_size, FLAGS.num_epochs)
+
             # Training loop. For each batch...
             for batch in batches:
-                if model_name == 'w2v':
-                    x_batch, y_batch = zip(*batch)
-                    train_step(x_batch, y_batch)
-                elif  model_name == 'w2v_lex':
-                    x_batch, y_batch, x_batch_lex = zip(*batch)
-                    train_step(x_batch, y_batch, x_batch_lex)
+                x_batch, y_batch = zip(*batch)
+                train_step(x_batch, y_batch)
+
 
                 current_step = tf.train.global_step(sess, global_step)
                 if current_step % FLAGS.evaluate_every == 0:
                     
                     print("Evaluation:")
 
-                    if datasource == 'semeval' and model_name == 'w2v':
+                    if datasource == 'semeval':
                         curr_af1_dev = dev_step(x_dev, y_dev, writer=dev_summary_writer)
                         curr_af1_tst = test_step(x_test, y_test, writer=test_summary_writer)
 
-                    elif datasource == 'semeval' and model_name == 'w2v_lex':
-                        curr_af1_dev = dev_step(x_dev, y_dev, x_lex_dev, writer=dev_summary_writer)
-                        curr_af1_tst = test_step(x_test, y_test, x_lex_test, writer=test_summary_writer)
-
-                    elif datasource == 'sst' and model_name == 'w2v':
+                    elif datasource == 'sst':
                         curr_af1_dev = dev_step(x_dev, y_dev, writer=dev_summary_writer, score_type = 'acc')
                         curr_af1_tst = test_step(x_test, y_test, writer=test_summary_writer, score_type = 'acc')
 
-                    elif datasource == 'sst' and model_name == 'w2v_lex':
-                        curr_af1_dev = dev_step(x_dev, y_dev, x_lex_dev, writer=dev_summary_writer, score_type = 'acc')
-                        curr_af1_tst = test_step(x_test, y_test, x_lex_test, writer=test_summary_writer, score_type = 'acc')
 
                     if curr_af1_dev > max_af1_dev:
                         max_af1_dev = curr_af1_dev
@@ -505,13 +470,13 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--w2vsource', default='twitter', choices=['twitter','amazon'], type=str)
-    parser.add_argument('--w2vdim', default=400, type=int)
-    parser.add_argument('--w2vnumfilters', default=128, type=int)
+    parser.add_argument('--w2vdim', default=50, type=int)
+    parser.add_argument('--w2vnumfilters', default=16, type=int)
     parser.add_argument('--lexdim', default=15, type=int)
     parser.add_argument('--lexnumfilters', default=9, type=int)
     parser.add_argument('--randomseed', default=7, type=int)
     parser.add_argument('--datasource', default='semeval', choices=['semeval','sst'], type=str)
-    parser.add_argument('--model', default='w2v', choices=['w2v', 'w2v_lex'], type=str) # w2v, w2vlex, attention
+    parser.add_argument('--model', default='w2v_lex', choices=['w2v', 'w2v_lex'], type=str) # w2v, w2vlex, attention
     parser.add_argument('--trainable', default='nonstatic', choices=['static', 'nonstatic'], type=str) # w2v, w2vlex, attention
     parser.add_argument('--expanded', default=0, choices=[0,1,2,3,4,5,6,7], type=int)
 

@@ -9,7 +9,7 @@ class W2V_LEX_CNN(object):
     """
     def __init__(
             self, sequence_length, num_classes,
-            embedding_size, filter_sizes, num_filters, embedding_size_lex, num_filters_lex, l2_reg_lambda=0.0):
+            embedding_size, filter_sizes, num_filters, embedding_size_lex, num_filters_lex, themodel, l2_reg_lambda=0.0):
 
 
         # Placeholders for input, output and dropout

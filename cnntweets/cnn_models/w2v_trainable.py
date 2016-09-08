@@ -8,7 +8,7 @@ class W2V_TRAINABLE(object):
     """
     def __init__(
       self, sequence_length, num_classes, vocab_size, is_trainable,
-      embedding_size, filter_sizes, num_filters, l2_reg_lambda=0.0, random_seed=7):
+      embedding_size, filter_sizes, num_filters, embedding_size_lex, num_filters_lex, themodel, l2_reg_lambda=0.0, random_seed=7):
 
         np.random.seed(random_seed)
 
@@ -28,11 +28,21 @@ class W2V_TRAINABLE(object):
         # Embedding layer
         with tf.device('/cpu:0'), tf.name_scope("w2v_embedding"):
             self.W = tf.Variable(
-                tf.random_uniform([vocab_size, embedding_size], -1.0, 1.0, seed=7),
+                tf.random_uniform([vocab_size, embedding_size], -1.0, 1.0, seed=random_seed),
                 trainable=trainable,
                 name="W")
             self.embedded_chars = tf.nn.embedding_lookup(self.W, self.input_x)
             self.embedded_chars_expanded = tf.expand_dims(self.embedded_chars, -1)
+
+        if themodel == 'w2v_lex':
+            with tf.device('/cpu:0'), tf.name_scope("lexicon_embedding"):
+                self.W_lex = tf.Variable(
+                    tf.random_uniform([vocab_size, embedding_size_lex], -1.0, 1.0, seed=random_seed),
+                    trainable=trainable,
+                    name="W_lex")
+                self.embedded_chars_lex = tf.nn.embedding_lookup(self.W_lex, self.input_x)
+                self.embedded_chars_expanded_lexicon = tf.expand_dims(self.embedded_chars_lex, -1)
+
 
         # Create a convolution + maxpool layer for each filter size
         pooled_outputs = []
@@ -63,10 +73,43 @@ class W2V_TRAINABLE(object):
                     name="pool")
                 pooled_outputs.append(pooled)
 
+
+        # APPLY CNN TO LEXICON EMBEDDING
+        if themodel=='w2v_lex':
+            for i, filter_size in enumerate(filter_sizes):
+                with tf.name_scope("lexicon-conv-maxpool-%s" % filter_size):
+                    # Convolution Layer
+
+                    filter_shape = [filter_size, embedding_size_lex, 1, num_filters_lex]
+                    W = tf.Variable(tf.truncated_normal(filter_shape, stddev=0.1), name="W")
+                    b = tf.Variable(tf.constant(0.1, shape=[num_filters_lex]), name="b")
+
+                    conv = tf.nn.conv2d(
+                        self.embedded_chars_expanded_lexicon,
+                        W,
+                        strides=[1, 1, 1, 1],
+                        padding="VALID",
+                        name="conv")
+                    # Apply nonlinearity
+                    h = tf.nn.relu(tf.nn.bias_add(conv, b), name="relu")
+                    # Maxpooling over the outputs
+                    pooled = tf.nn.max_pool(
+                        h,
+                        ksize=[1, sequence_length - filter_size + 1, 1, 1],
+                        strides=[1, 1, 1, 1],
+                        padding='VALID',
+                        name="pool")
+                    pooled_outputs.append(pooled)
+
         # Combine all the pooled features
-        num_filters_total = num_filters * len(filter_sizes)
-        self.h_pool = tf.concat(3, pooled_outputs)
-        self.h_pool_flat = tf.reshape(self.h_pool, [-1, num_filters_total])
+        if themodel=='w2v':
+            num_filters_total = num_filters * len(filter_sizes)
+            self.h_pool = tf.concat(3, pooled_outputs)
+            self.h_pool_flat = tf.reshape(self.h_pool, [-1, num_filters_total])
+        elif themodel=='w2v_lex':
+            num_filters_total = num_filters * len(filter_sizes) + num_filters_lex * len(filter_sizes)
+            self.h_pool = tf.concat(3, pooled_outputs)
+            self.h_pool_flat = tf.reshape(self.h_pool, [-1, num_filters_total])
 
         # Add dropout
         with tf.name_scope("dropout"):
