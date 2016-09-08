@@ -158,6 +158,7 @@ def load_lexicon_unigram(lexdim):
 
 def run_train(w2vsource, w2vdim, w2vnumfilters, lexdim, lexnumfilters, randomseed, datasource, model_name, trainable, is_expanded):
 
+    np.random.seed(randomseed)
     max_len = 60
     norm_model = []
 
