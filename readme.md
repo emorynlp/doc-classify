@@ -83,7 +83,10 @@ data/trained_models/model-w2vlexatt
 	
 ```bash
 cd cnntweets
+# plain cnn
 nohup python train_model.py --model w2v > out.txt &
+# cnn + lexicon
+nohup python train_model.py --model w2vlexatt > out.txt &
 ```
 	
 ### Test 
@@ -99,5 +102,8 @@ nohup python train_model.py --model w2v > out.txt &
 
 ```bash
 cd cnntweets
-nohup python test_model.py --model w2v
+# plain cnn
+python test_model.py --model w2v
+# cnn + lexicon
+python test_model.py --model w2vlexatt
 ```
