@@ -5,7 +5,7 @@
 ### clone the repository
 
 ```bash
-git@github.com:emorynlp/doc-classify.git
+git clone git@github.com:emorynlp/doc-classify.git
 ```
 * make virtual env
 
@@ -18,6 +18,9 @@ mkvirtualenv sent
 
 ```bash
 pip install -r requirements.txt
+# install tensorflow depending on the server type (version should be 0.10.0rc0)
+export TF_BINARY_URL=https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-0.10.0rc0-cp27-none-linux_x86_64.whl
+pip install --upgrade $TF_BINARY_URL
 ```
 
 * Python 2.7

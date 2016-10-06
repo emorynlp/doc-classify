@@ -45,18 +45,10 @@ tf.flags.DEFINE_boolean("log_device_placement", False, "Log placement of ops on 
 
 FLAGS = tf.flags.FLAGS
 FLAGS._parse_flags()
-print("\nParameters:")
-for attr, value in sorted(FLAGS.__flags.items()):
-    print("{}={}".format(attr.upper(), value))
-print("")
-
-
-# Data Preparatopn
-# ==================================================
-
-# Load data
-print("Loading data...")
-
+# print("\nParameters:")
+# for attr, value in sorted(FLAGS.__flags.items()):
+#     print("{}={}".format(attr.upper(), value))
+# print("")
 
 
 def run_test(model_name):
@@ -136,15 +128,6 @@ def run_test(model_name):
                     }
 
                 predictions = sess.run([cnn.predictions], feed_dict)
-                # print predictions
-                # if predictions[0][0]==0:
-                #     print predictions, 'negative'
-                #
-                # elif predictions==1:
-                #     print predictions, 'objective'
-                # else:
-                #     print predictions, 'positive'
-                #
                 return predictions[0]
 
             if model_name == 'w2v':
@@ -163,8 +146,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     program = os.path.basename(sys.argv[0])
 
-    print 'ADDITIONAL PARAMETER\n model: %s\n' % (args.model)
+    print 'model: %s\n' % (args.model)
 
     run_test(args.model)
-    # run_train(args.w2vsource, args.w2vdim, args.w2vnumfilters, args.lexdim, args.lexnumfilters, args.randomseed,
 

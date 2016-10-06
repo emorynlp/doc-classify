@@ -1442,18 +1442,18 @@ class TextCNNAttention2VecIndividual(object):
         with tf.device('/cpu:0'), tf.name_scope("embedding"):
             self.embedded_chars = self.input_x
             self.embedded_chars_expanded = tf.expand_dims(self.embedded_chars, -1)
-            print self.embedded_chars_expanded
+            # print self.embedded_chars_expanded
 
             # lexicon embedding
             self.embedded_chars_lexicon = self.input_x_lexicon
             self.embedded_chars_expanded_lexicon = tf.expand_dims(self.embedded_chars_lexicon, -1)
 
-            print '[self.embedded_chars]', self.embedded_chars
-            print '[self.embedded_chars_expanded]', self.embedded_chars_expanded
+            # print '[self.embedded_chars]', self.embedded_chars
+            # print '[self.embedded_chars_expanded]', self.embedded_chars_expanded
 
 
-            print '[self.embedded_chars_lexicon]', self.embedded_chars_lexicon
-            print '[self.embedded_chars_expanded_lexicon]', self.embedded_chars_expanded_lexicon
+            # print '[self.embedded_chars_lexicon]', self.embedded_chars_lexicon
+            # print '[self.embedded_chars_expanded_lexicon]', self.embedded_chars_expanded_lexicon
 
         attention_outputs = []
         with tf.name_scope("pre-attention"):
@@ -1464,32 +1464,32 @@ class TextCNNAttention2VecIndividual(object):
 
             self.embedded_chars_tr = tf.batch_matrix_transpose(self.embedded_chars)
             self.embedded_chars_lexicon_tr = tf.batch_matrix_transpose(self.embedded_chars_lexicon)
-            print '[self.embedded_chars_lexicon_tr]', self.embedded_chars_lexicon_tr
+            # print '[self.embedded_chars_lexicon_tr]', self.embedded_chars_lexicon_tr
 
             def fn_matmul_w2v(previous_output, current_input):
-                print(current_input.get_shape())
+                # print(current_input.get_shape())
                 current_ouput = tf.matmul(current_input, self.U_w2v)
-                print 'previous_output', previous_output
-                print 'current_ouput', current_ouput
+                # print 'previous_output', previous_output
+                # print 'current_ouput', current_ouput
                 return current_ouput
 
             def fn_matmul_lex(previous_output, current_input):
-                print(current_input.get_shape())
+                # print(current_input.get_shape())
                 current_ouput = tf.matmul(current_input, self.U_lex)
-                print 'previous_output', previous_output
-                print 'current_ouput', current_ouput
+                # print 'previous_output', previous_output
+                # print 'current_ouput', current_ouput
                 return current_ouput
 
             initializer = tf.constant(np.zeros([sequence_length, attention_depth_w2v]), dtype=tf.float32)
             WU_w2v = tf.scan(fn_matmul_w2v, self.embedded_chars, initializer=initializer)
-            print '[WU_w2v]', WU_w2v
+            # print '[WU_w2v]', WU_w2v
 
             initializer = tf.constant(np.zeros([sequence_length, attention_depth_lex]), dtype=tf.float32)
             LU_lex = tf.scan(fn_matmul_lex, self.embedded_chars_lexicon, initializer=initializer)
-            print '[LU_lex]', LU_lex
+            # print '[LU_lex]', LU_lex
 
             WU_w2v_expanded = tf.expand_dims(WU_w2v, -1)
-            print '[WU_w2v_expanded]', WU_w2v_expanded  # (?, 60(seq_len), 60(depth), 1)
+            # print '[WU_w2v_expanded]', WU_w2v_expanded  # (?, 60(seq_len), 60(depth), 1)
 
             w2v_pool = tf.nn.max_pool(
                 WU_w2v_expanded,
@@ -1498,10 +1498,10 @@ class TextCNNAttention2VecIndividual(object):
                 padding='VALID',
                 name="w2v_pool")
 
-            print '[w2v_pool]', w2v_pool  # (?, 60(seq_len), 1, 1) #select attention for w2v
+            # print '[w2v_pool]', w2v_pool  # (?, 60(seq_len), 1, 1) #select attention for w2v
 
             LU_lex_expanded = tf.expand_dims(LU_lex, -1)
-            print '[LU_lex_expanded]', LU_lex_expanded  # (?, 60(seq_len), 60(depth), 1)
+            # print '[LU_lex_expanded]', LU_lex_expanded  # (?, 60(seq_len), 60(depth), 1)
 
             lex_pool = tf.nn.max_pool(
                 LU_lex_expanded,
@@ -1510,13 +1510,13 @@ class TextCNNAttention2VecIndividual(object):
                 padding='VALID',
                 name="lex_pool")
 
-            print '[lex_pool]', lex_pool  # (?, 60(seq_len), 1, 1) #select attention for lex
+            # print '[lex_pool]', lex_pool  # (?, 60(seq_len), 1, 1) #select attention for lex
 
             self.w2v_pool_sq = tf.expand_dims(tf.squeeze(w2v_pool, squeeze_dims=[2, 3]), -1)  # (?, 60, 1)
-            print '[w2v_pool_sq]', self.w2v_pool_sq
+            # print '[w2v_pool_sq]', self.w2v_pool_sq
 
             self.lex_pool_sq = tf.expand_dims(tf.squeeze(lex_pool, squeeze_dims=[2, 3]), -1)  # (?, 60, 1)
-            print '[lex_pool_sq]', self.lex_pool_sq
+            # print '[lex_pool_sq]', self.lex_pool_sq
 
             attentioned_w2v = tf.batch_matmul(self.embedded_chars_tr, self.w2v_pool_sq)
             attentioned_lex = tf.batch_matmul(self.embedded_chars_lexicon_tr, self.lex_pool_sq)
@@ -1524,8 +1524,8 @@ class TextCNNAttention2VecIndividual(object):
             attentioned_w2v_sq = tf.squeeze(attentioned_w2v, squeeze_dims=[2])
             attentioned_lex_sq = tf.squeeze(attentioned_lex, squeeze_dims=[2])
 
-            print '[attentioned_w2v]', attentioned_w2v_sq
-            print '[attentioned_lex]', attentioned_lex_sq
+            # print '[attentioned_w2v]', attentioned_w2v_sq
+            # print '[attentioned_lex]', attentioned_lex_sq
             attention_outputs.append(attentioned_w2v_sq)
             attention_outputs.append(attentioned_lex_sq)
 
@@ -1588,17 +1588,17 @@ class TextCNNAttention2VecIndividual(object):
         num_filters_total = num_filters * len(filter_sizes) + num_filters_lex * len(filter_sizes)
         self.h_pool = tf.concat(3, pooled_outputs)
         self.h_pool_flat = tf.reshape(self.h_pool, [-1, num_filters_total])
-        print '[self.h_pool]', self.h_pool
-        print '[self.h_pool_flat]', self.h_pool_flat
+        # print '[self.h_pool]', self.h_pool
+        # print '[self.h_pool_flat]', self.h_pool_flat
 
-        print 'pooled_outputs[0]', pooled_outputs[0]
-        print 'pooled_outputs[1]', pooled_outputs[1]
+        # print 'pooled_outputs[0]', pooled_outputs[0]
+        # print 'pooled_outputs[1]', pooled_outputs[1]
 
-        print 'attention_outputs[0]', attention_outputs[0]
-        print 'attention_outputs[1]', attention_outputs[1]
+        # print 'attention_outputs[0]', attention_outputs[0]
+        # print 'attention_outputs[1]', attention_outputs[1]
 
         self.appended_pool = tf.concat(1, [self.h_pool_flat, attention_outputs[0], attention_outputs[1]])
-        print '[self.appended_pool]', self.appended_pool
+        # print '[self.appended_pool]', self.appended_pool
         num_filters_total = num_filters_total + embedding_size + embedding_size_lex
 
         # Add dropout
