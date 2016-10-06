@@ -9,7 +9,7 @@ class W2V_CNN(object):
     """
     def __init__(
       self, sequence_length, num_classes,
-      embedding_size, filter_sizes, num_filters, l2_reg_lambda=0.0):
+      embedding_size, filter_sizes, num_filters, l2_reg_lambda=0.0, l1_reg_lambda=0.0):
 
         # Placeholders for input, output and dropout
         self.input_x = tf.placeholder(tf.float32, [None, sequence_length, embedding_size], name="input_x")
@@ -18,6 +18,7 @@ class W2V_CNN(object):
 
         # Keeping track of l2 regularization loss (optional)
         l2_loss = tf.constant(0.0)
+        l1_loss = tf.constant(0.0)
 
         # Embedding layer
         with tf.device('/cpu:0'), tf.name_scope("embedding"):
@@ -123,73 +124,8 @@ class W2V_CNN(object):
             correct_predictions_np = tf.equal(negp_golds, negp_preds)
             self.neg_p = tf.reduce_mean(tf.cast(correct_predictions_np, "float"), name="neg_precision")
 
-            self.f1_neg = 2 * self.neg_p * self.neg_r / (self.neg_p + self.neg_r + 0.00001) * 100
-            self.f1_pos = 2 * pos_p * pos_r / (pos_p + pos_r + 0.00001) * 100
+            self.f1_neg = 2 * self.neg_p * self.neg_r / (self.neg_p + self.neg_r) * 100
+            self.f1_pos = 2 * pos_p * pos_r / (pos_p + pos_r) * 100
 
             self.avg_f1 = (self.f1_neg + self.f1_pos) / 2
-
-
-    def f1_score(pred_y, gold_y):
-        prec_neg_cnt = []
-        prec_pos_cnt = []
-        recall_neg_cnt = []
-        recall_pos_cnt = []
-        acc = []
-
-        Y=gold_y
-        for i in range(len(gold_y)):
-            if gold_y[i] == pred_y[i]:
-                acc.append(1)
-            else:
-                acc.append(0)
-
-            index = pred_y[i]
-            # if pred is neg
-            if index==2:
-                if Y[i]==2:
-                    prec_neg_cnt.append(1)
-                else:
-                    prec_neg_cnt.append(0)
-
-            # if pred is positive
-            if index==0:
-                if Y[i]==0:
-                    prec_pos_cnt.append(1)
-                else:
-                    prec_pos_cnt.append(0)
-
-            # if gold is negative
-            if Y[i]==2:
-                if index==2:  # (pos, neg, obj)
-                    recall_neg_cnt.append(1)
-                else:
-                    recall_neg_cnt.append(0)
-
-            # if gold is positive (neg obj pos)
-            if Y[i]==0:
-                if index==0:# (pos, neg, obj)
-                    recall_pos_cnt.append(1)
-                else:
-                    recall_pos_cnt.append(0)
-
-        pr_neg = sum(prec_neg_cnt)*1.0/len(prec_neg_cnt)
-        pr_pos = sum(prec_pos_cnt)*1.0/len(prec_pos_cnt)
-        rc_neg = sum(recall_neg_cnt)*1.0/len(recall_neg_cnt)
-        rc_pos = sum(recall_pos_cnt)*1.0/len(recall_pos_cnt)
-
-        f1_neg = 2*pr_neg*rc_neg/(pr_neg+rc_neg)*100
-        f1_pos = 2*pr_pos*rc_pos/(pr_pos+rc_pos)*100
-
-        f1 =  (f1_neg+f1_pos)/2
-
-        accuracy = sum(acc)*1.0/len(acc)*100
-
-        rval=[]
-        rval.append(f1_neg)
-        rval.append(f1_pos)
-        rval.append(f1)
-        rval.append(accuracy)
-
-
-        return rval
 

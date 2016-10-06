@@ -2,7 +2,8 @@ import numpy as np
 import re
 import itertools
 from collections import Counter
-
+import os
+from utils.word2vecReader import Word2Vec
 
 
 def clean_str(string):
@@ -25,51 +26,23 @@ def clean_str(string):
     string = re.sub(r"\s{2,}", " ", string)
     return string.strip().lower()
 
-def load_data_trainable(dataset, rottenTomato=False):
+def load_test_data_and_labels(dataset, rottenTomato=False):
     """
     Loads MR polarity data from files, splits the data into words and generates labels.
     Returns split sentences and labels.
     """
-    # Load data from files
     if rottenTomato:
         template_txt = '../data/rt-data-nlp4jtok/%s'
     else:
-        template_txt = '../data/tweets/txt/%s'
+        template_txt = '../data/tweets/%s'
 
     pathtxt = template_txt % dataset
 
-    x_text=[line.split('\t')[2] for line in open(pathtxt, "r").readlines()]
-    x_text = [sent for sent in x_text]
+    x_text=[line.split('\t')[0] for line in open(pathtxt, "r").readlines()]
+    x_text = [s.split(" ") for s in x_text]
 
-    y = []
-    if rottenTomato:
-        for line in open(pathtxt, "r").readlines():
-            senti=line.split('\t')[1]
-            if  senti == 'neutral':
-                y.append([0, 0, 1, 0, 0])
+    return x_text
 
-            elif senti == 'positive':
-                y.append([0, 0, 0, 1, 0])
-            elif senti == 'very_positive':
-                y.append([0, 0, 0, 0 ,1])
-            elif senti == 'negative':
-                y.append([0, 1, 0, 0 ,0])
-            elif senti == 'very_negative':
-                y.append([1, 0, 0, 0 ,0])
-
-    else:    
-        for line in open(pathtxt, "r").readlines():
-            senti=line.split('\t')[1]
-            if  senti == 'objective':
-                y.append([0, 1, 0])
-
-            elif senti == 'positive':
-                y.append([0, 0, 1])
-
-            else:  # negative
-                y.append([1, 0, 0])
-
-    return [x_text, y]
 
 def load_data_and_labels(dataset, rottenTomato=False):
     """
@@ -79,7 +52,7 @@ def load_data_and_labels(dataset, rottenTomato=False):
     if rottenTomato:
         template_txt = '../data/rt-data-nlp4jtok/%s'
     else:
-        template_txt = '../data/tweets/txt/%s'
+        template_txt = '../data/tweets/%s'
 
     pathtxt = template_txt % dataset
 
@@ -117,6 +90,54 @@ def load_data_and_labels(dataset, rottenTomato=False):
     return [x_text, y]
 
 
+def load_data_trainable(dataset, rottenTomato=False):
+    """
+    Loads MR polarity data from files, splits the data into words and generates labels.
+    Returns split sentences and labels.
+    """
+    # Load data from files
+    if rottenTomato:
+        template_txt = '../data/rt-data-nlp4jtok/%s'
+    else:
+        template_txt = '../data/tweets/%s'
+
+    pathtxt = template_txt % dataset
+
+    x_text=[line.split('\t')[2] for line in open(pathtxt, "r").readlines()]
+    x_text = [sent for sent in x_text]
+
+    y = []
+    if rottenTomato:
+        for line in open(pathtxt, "r").readlines():
+            senti=line.split('\t')[1]
+            if  senti == 'neutral':
+                y.append([0, 0, 1, 0, 0])
+
+            elif senti == 'positive':
+                y.append([0, 0, 0, 1, 0])
+            elif senti == 'very_positive':
+                y.append([0, 0, 0, 0 ,1])
+            elif senti == 'negative':
+                y.append([0, 1, 0, 0 ,0])
+            elif senti == 'very_negative':
+                y.append([1, 0, 0, 0 ,0])
+
+    else:
+        for line in open(pathtxt, "r").readlines():
+            senti=line.split('\t')[1]
+            if  senti == 'objective':
+                y.append([0, 1, 0])
+
+            elif senti == 'positive':
+                y.append([0, 0, 1])
+
+            else:  # negative
+                y.append([1, 0, 0])
+
+    return [x_text, y]
+
+
+
 def pad_sentences(sentences, padlen, padding_word="<PAD/>"):
     """
     Pads all sentences to the same length. The length is defined by the longest sentence.
@@ -134,6 +155,66 @@ def pad_sentences(sentences, padlen, padding_word="<PAD/>"):
         new_sentence = sentence + [padding_word] * num_padding
         padded_sentences.append(new_sentence)
     return padded_sentences
+
+
+def build_vocab(sentences):
+    """
+    Builds a vocabulary mapping from word to index based on the sentences.
+    Returns vocabulary mapping and inverse vocabulary mapping.
+    """
+    # Build vocabulary
+    word_counts = Counter(itertools.chain(*sentences))
+    # Mapping from index to word
+    vocabulary_inv = [x[0] for x in word_counts.most_common()]
+    vocabulary_inv = list(sorted(vocabulary_inv))
+    # Mapping from word to index
+    vocabulary = {x: i for i, x in enumerate(vocabulary_inv)}
+    return [vocabulary, vocabulary_inv]
+
+
+def build_lex_data(sentences, lexiconModel, padlen):
+    """
+    Maps sentencs and labels to vectors based on a vocabulary.
+    """
+    def get_index_of_vocab_lex(lexiconModel, word):
+        lexiconList = np.empty([0, 1])
+        for index, eachModel in enumerate(lexiconModel):
+            if word in eachModel:
+                temp = np.array(np.float32(eachModel[word]))
+            else:
+                temp = np.array(np.float32(eachModel["<PAD/>"]))
+            lexiconList = np.append(lexiconList, temp)
+
+        if len(lexiconList) > 15:
+            print len(lexiconList)
+            print '======================over 15======================'
+        return lexiconList
+
+    sentences = [ sentence.split(" ") for sentence in sentences]
+    sentences_padded = pad_sentences(sentences, padlen)
+    x_lex = np.array([[get_index_of_vocab_lex(lexiconModel, word) for word in sentence] for sentence in sentences_padded])
+    return x_lex
+
+def build_w2v_data(dataset, w2vmodel, padlen):
+    """
+    Maps sentencs and labels to vectors based on a vocabulary.
+    """
+    sentences, labels = load_data_and_labels(dataset)
+    sentences_padded = pad_sentences(sentences, padlen)
+
+    w2v_dim = len(w2vmodel["a"])
+
+    def get_index_of_voca(model, word):
+        try:
+            return model[word]
+        except:
+            return np.array([np.float32(0.0)]*w2v_dim)
+
+
+    x = np.array([[get_index_of_voca(w2vmodel,word) for word in sentence] for sentence in sentences_padded])
+    y = np.array(labels)
+    return [x, y]
+
 
 def build_input_data_with_w2v(sentences, labels, w2vmodel, lexiconModel):
     """
@@ -166,7 +247,37 @@ def build_input_data_with_w2v(sentences, labels, w2vmodel, lexiconModel):
     y = np.array(labels)
     return [x, y, x_lex]
 
-def load_data(dataset, w2vmodel, lexiconModel, padlen=None, rottenTomato=False):
+def build_test_input_data_with_w2v(sentences, w2vmodel, lexiconModel):
+    """
+    Maps sentencs and labels to vectors based on a vocabulary.
+    """
+    w2v_dim = len(w2vmodel["a"])
+
+    def get_index_of_voca(model, word):
+        try:
+            return model[word]
+        except:
+            return np.array([np.float32(0.0)]*w2v_dim)
+
+    def get_index_of_vocab_lex(lexiconModel, word):
+        lexiconList = np.empty([0, 1])
+        for index, eachModel in enumerate(lexiconModel):
+            if word in eachModel:
+                temp = np.array(np.float32(eachModel[word]))
+            else:
+                temp = np.array(np.float32(eachModel["<PAD/>"]))
+            lexiconList = np.append(lexiconList, temp)
+
+        if len(lexiconList) > 15:
+            print len(lexiconList)
+            print '======================over 15======================'
+        return lexiconList
+
+    x = np.array([[get_index_of_voca(w2vmodel,word) for word in sentence] for sentence in sentences])
+    x_lex = np.array([[get_index_of_vocab_lex(lexiconModel, word) for word in sentence] for sentence in sentences])
+    return [x, x_lex]
+
+def load_data(dataset, w2vmodel, lexiconModel, padlen=None, rottenTomato=False, multichannel=False):
 # def load_data(dataset, w2vmodel, padlen=None):
     """
     Loads and preprocessed data for the MR dataset.
@@ -181,11 +292,56 @@ def load_data(dataset, w2vmodel, lexiconModel, padlen=None, rottenTomato=False):
         sentences_padded = pad_sentences(sentences, padlen)
 
     x, y , x_lex = build_input_data_with_w2v(sentences_padded, labels, w2vmodel, lexiconModel)
-    return [x, y, x_lex]
+
+
+    if multichannel==True:
+        w2vdim = x[0].shape[1]
+        lexdim = x_lex[0].shape[1]
+        npad = ((0, 0), (0, w2vdim - lexdim))
+
+        new_x_batch = []
+        for idx, xlex in enumerate(x_lex):
+            xlex_padded = np.pad(xlex, pad_width=npad, mode='constant', constant_values=0)
+            new_x_batch.append(np.concatenate((x[idx][..., np.newaxis], xlex_padded[..., np.newaxis]), axis=2))
+
+        x_fat = np.array(new_x_batch)
+        return [x, y, x_lex, x_fat]
+
+    return [x, y, x_lex, None]
 
     # x, y = build_input_data_with_w2v(sentences_padded, labels, w2vmodel)
     # return [x, y]
 
+def load_test_data(dataset, w2vmodel, lexiconModel, padlen=None, rottenTomato=False, multichannel=False):
+    """
+    Loads and preprocessed data for the MR dataset.
+    Returns input vectors, labels, vocabulary, and inverse vocabulary.
+    """
+    # Load and preprocess data
+    if rottenTomato:
+        sentences, labels = load_data_and_labels(dataset, True)
+        sentences_padded = pad_sentences(sentences, padlen)
+    else:
+        sentences = load_test_data_and_labels(dataset)
+        sentences_padded = pad_sentences(sentences, padlen)
+
+    x, x_lex = build_test_input_data_with_w2v(sentences_padded, w2vmodel, lexiconModel)
+
+
+    if multichannel==True:
+        w2vdim = x[0].shape[1]
+        lexdim = x_lex[0].shape[1]
+        npad = ((0, 0), (0, w2vdim - lexdim))
+
+        new_x_batch = []
+        for idx, xlex in enumerate(x_lex):
+            xlex_padded = np.pad(xlex, pad_width=npad, mode='constant', constant_values=0)
+            new_x_batch.append(np.concatenate((x[idx][..., np.newaxis], xlex_padded[..., np.newaxis]), axis=2))
+
+        x_fat = np.array(new_x_batch)
+        return [x, x_lex, x_fat]
+
+    return [x, x_lex, None]
 
 def batch_iter(data, batch_size, num_epochs, shuffle=True):
     """
@@ -206,3 +362,126 @@ def batch_iter(data, batch_size, num_epochs, shuffle=True):
             start_index = batch_num * batch_size
             end_index = min((batch_num + 1) * batch_size, data_size)
             yield shuffled_data[start_index:end_index]
+
+def load_w2v(w2vdim, simple_run=True, source="twitter"):
+    if simple_run:
+        return {'a': np.array([np.float32(0.0)] * w2vdim)}
+
+    else:
+        if source == "twitter":
+            model_path = '../data/emory_w2v/w2v-%d.bin' % w2vdim
+        elif source == "amazon":
+            model_path = '../data/emory_w2v/w2v-%d-%s.bin' % (w2vdim, source)
+
+        model = Word2Vec.load_word2vec_format(model_path, binary=True)
+        print("The vocabulary size is: " + str(len(model.vocab)))
+
+        return model
+
+
+def load_lexicon_unigram(lexdim):
+    if lexdim == 6:
+        default_vector_dic = {'EverythingUnigramsPMIHS.txt': [0],
+                              'HS-AFFLEX-NEGLEX-unigrams.txt': [0],
+                              'Maxdiff-Twitter-Lexicon_0to1.txt': [0.5],
+                              'S140-AFFLEX-NEGLEX-unigrams.txt': [0],
+                              'unigrams-pmilexicon.txt': [0],
+                              'unigrams-pmilexicon_sentiment_140.txt': [0]}
+
+    elif lexdim == 2:
+        default_vector_dic = {'EverythingUnigramsPMIHS.txt': [0],
+                              'unigrams-pmilexicon.txt': [0]}
+
+    elif lexdim == 4:
+        default_vector_dic = {'EverythingUnigramsPMIHS.txt': [0],
+                              'unigrams-pmilexicon.txt': [0, 0, 0]}
+
+    elif lexdim == 15:
+        default_vector_dic = {'EverythingUnigramsPMIHS.txt': [0],
+                              'HS-AFFLEX-NEGLEX-unigrams.txt': [0, 0, 0],
+                              'Maxdiff-Twitter-Lexicon_0to1.txt': [0.5],
+                              'S140-AFFLEX-NEGLEX-unigrams.txt': [0, 0, 0],
+                              'unigrams-pmilexicon.txt': [0, 0, 0],
+                              'unigrams-pmilexicon_sentiment_140.txt': [0, 0, 0],
+                              'BL.txt': [0]}
+    else:
+        default_vector_dic = {'EverythingUnigramsPMIHS.txt': [0],
+                              'HS-AFFLEX-NEGLEX-unigrams.txt': [0, 0, 0],
+                              'Maxdiff-Twitter-Lexicon_0to1.txt': [0.5],
+                              'S140-AFFLEX-NEGLEX-unigrams.txt': [0, 0, 0],
+                              'unigrams-pmilexicon.txt': [0, 0, 0],
+                              'unigrams-pmilexicon_sentiment_140.txt': [0, 0, 0],
+                              'BL.txt': [0]}
+
+    file_path = ["../data/lexicon_data/" + files for files in os.listdir("../data/lexicon_data") if
+                 files.endswith(".txt")]
+    if lexdim == 2 or lexdim == 4:
+        raw_model = [dict() for x in range(2)]
+        norm_model = [dict() for x in range(2)]
+        file_path = ['../data/lexicon_data/EverythingUnigramsPMIHS.txt', '../data/lexicon_data/unigrams-pmilexicon.txt']
+    else:
+        raw_model = [dict() for x in range(len(file_path))]
+        norm_model = [dict() for x in range(len(file_path))]
+
+    for index, each_model in enumerate(raw_model):
+        data_type = file_path[index].replace("../data/lexicon_data/", "")
+        # if lexdim == 2 or lexdim == 4:
+        #     if data_type not in ['EverythingUnigramsPMIHS.txt', 'unigrams-pmilexicon.txt']:
+        #         continue
+
+        default_vector = default_vector_dic[data_type]
+
+        # print data_type, default_vector
+        raw_model[index]["<PAD/>"] = default_vector
+
+        with open(file_path[index], 'r') as document:
+            for line in document:
+                line_token = re.split(r'\t', line)
+
+                data_vec = []
+                key = ''
+
+                if lexdim == 2 or lexdim == 6:
+                    for idx, tk in enumerate(line_token):
+                        if idx == 0:
+                            key = tk
+
+                        elif idx == 1:
+                            data_vec.append(float(tk))
+
+                        else:
+                            continue
+
+                else:  # 4 or 14
+                    for idx, tk in enumerate(line_token):
+                        if idx == 0:
+                            key = tk
+                        else:
+                            try:
+                                data_vec.append(float(tk))
+                            except:
+                                pass
+
+                assert (key != '')
+                each_model[key] = data_vec
+
+    for index, each_model in enumerate(norm_model):
+        # for m in range(len(raw_model)):
+        values = np.array(raw_model[index].values())
+        new_val = np.copy(values)
+
+        # print 'model %d' % index
+        for i in range(len(raw_model[index].values()[0])):
+            pos = np.max(values, axis=0)[i]
+            neg = np.min(values, axis=0)[i]
+            mmax = max(abs(pos), abs(neg))
+            # print pos, neg, mmax
+
+            new_val[:, i] = values[:, i] / mmax
+
+        keys = raw_model[index].keys()
+        dictionary = dict(zip(keys, new_val))
+
+        norm_model[index] = dictionary
+
+    return norm_model, raw_model
