@@ -25,9 +25,9 @@ import sys
 from utils import cnn_data_helpers
 from utils.butils import Timer
 from cnn_models.w2v_cnn import W2V_CNN
-from cnn_models.preattention_cnn import TextCNNAttention2VecIndividual
+import utils.word2vecReaderUtils as utils
 
-from utils.word2vecReader import Word2Vec
+from utils.cnn_data_helpers import load_w2v_withpath
 from utils.cnn_data_helpers import load_lexicon_unigram, load_w2v
 
 # Parameters
@@ -50,33 +50,43 @@ FLAGS._parse_flags()
 #     print("{}={}".format(attr.upper(), value))
 # print("")
 
-
-def run_test(model_name):
+# run_test(args.m, args.v, args.l, args.i)
+def run_test(model_path, w2v_path, lex_path_list, input_path):
     max_len = 60
-    w2vdim = 400
     w2vnumfilters = 64
-    lexdim = 15
     lexnumfilters = 9
     l2_reg_lambda = 2.0
     l1_reg_lambda = 0.0
-    attention_depth_w2v=50
-    attention_depth_lex=20
+
+    if len(lex_path_list) == 0:
+        model_name = 'w2v'
+    else:
+        model_name = 'w2vlex'
+
+    w2vdim = 0
+    lexdim = 0
+
+    with utils.smart_open(w2v_path) as fin:
+        header = utils.to_unicode(fin.readline())
+        w2vdim = int(header.split(' ')[1].strip())
+
+    with Timer("w2v"):
+        w2vmodel = load_w2v_withpath(w2v_path)
 
     with Timer("lex"):
-        unigram_lexicon_model, raw_model = load_lexicon_unigram(lexdim)
-    
-    with Timer("w2v"):
-        # w2vmodel = load_w2v(w2vdim, simple_run=True)
-        w2vmodel = load_w2v(w2vdim, simple_run=False)
-        
-    x_sample, x_lex_sample, _ = cnn_data_helpers.load_test_data('sample', w2vmodel, unigram_lexicon_model, max_len)
+        print 'old way of loading lexicon'
+        norm_model, raw_model = load_lexicon_unigram(lex_path_list)
+
+    for model_idx in range(len(norm_model)):
+        lexdim += len(norm_model[model_idx].values()[0])
+
+    unigram_lexicon_model = norm_model
+
+    x_sample, x_lex_sample, _ = cnn_data_helpers.load_test_data(input_path, w2vmodel, unigram_lexicon_model, max_len)
 
     del(w2vmodel)
     gc.collect()
 
-
-    savepath = '../data/trained_models/model-%s' % model_name
-    
 
     with tf.Graph().as_default():
         session_conf = tf.ConfigProto(
@@ -95,22 +105,20 @@ def run_test(model_name):
                     l1_reg_lambda=l1_reg_lambda)
 
             else: # w2vlexatt
-                cnn = TextCNNAttention2VecIndividual(
-                    sequence_length=x_sample.shape[1],
-                    num_classes=3,
+                cnn = W2V_LEX_CNN(
+                    sequence_length=x_train.shape[1],
+                    num_classes=num_classes,
                     embedding_size=w2vdim,
                     embedding_size_lex=lexdim,
                     num_filters_lex=lexnumfilters,
                     filter_sizes=list(map(int, FLAGS.filter_sizes.split(","))),
                     num_filters=w2vnumfilters,
-                    attention_depth_w2v=attention_depth_w2v,
-                    attention_depth_lex=attention_depth_lex,
                     l2_reg_lambda=l2_reg_lambda,
                     l1_reg_lambda=l1_reg_lambda)
 
 
             saver = tf.train.Saver(tf.all_variables())
-            saver.restore(sess,savepath)
+            saver.restore(sess,model_path)
 
             def get_prediction(x_batch, x_batch_lex=None):
                 if x_batch_lex is None:
@@ -138,15 +146,52 @@ def run_test(model_name):
             labels={0:'negative', 1:'objective', 2:'positive'}
             print '%s\n'*len(x_sample) % tuple(labels[l] for l in predictions)
 
+def get_lex_file_list(lexfile_path):
+    lex_file_list = []
+    with open(lexfile_path, 'rt') as handle:
+        for line in handle.readlines():
+            path = line.strip()
+
+            if os.path.isfile(path):
+                lex_file_list.append(path)
+            else:
+                print 'wrong file name(s) in the lex_config.txt\n%s' % path
+                return None
+
+    return lex_file_list
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', default='w2vlexatt', choices=['w2v', 'w2vlexatt'],type=str)
+    # python decode.py -m model_file -l lex_config.txt -i input_data
+    parser.add_argument('-m', default='./model_test', type=str)
+    parser.add_argument('-v', default='../data/emory_w2v/w2v-50.bin', type=str)  # w2v-400.bin
+    parser.add_argument('-l', default='./lex_config.txt', type=str)
+    parser.add_argument('-i', default='./input', type=str)
     args = parser.parse_args()
     program = os.path.basename(sys.argv[0])
 
-    print 'model: %s\n' % (args.model)
+    # print 'model: %s\n' % (args.model)
 
-    run_test(args.model)
+    lex_list = get_lex_file_list(args.l)
+
+    if not os.path.isfile(args.m):
+        print 'wrong model file name\n%s' % args.m
+        exit()
+
+    if not os.path.isfile(args.v):
+        print 'wrong file name for the w2v binary\n%s' % args.v
+        exit()
+
+    if not os.path.isfile(args.i):
+        print 'wrong input file name\n%s' % args.i
+        exit()
+
+    if lex_list == None:
+        exit()
+
+    for l in lex_list:
+        print l
+
+    run_test(args.m, args.v, args.l, args.i)
 

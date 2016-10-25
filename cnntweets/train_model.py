@@ -355,6 +355,7 @@ def run_train(w2v_path, trn_path, dev_path, model_path, lex_path_list, w2vnumfil
                         path = saver.save(sess, checkpoint_prefix, global_step=current_step)
                         best_model_path = path
                         print("Saved model checkpoint to {}\n".format(path))
+                        copyfile(best_model_path, model_path)
 
                     if rt_data == True:
                         print 'Status: [%d] Max Acc for dev (%f)\n' % (
@@ -365,7 +366,7 @@ def run_train(w2v_path, trn_path, dev_path, model_path, lex_path_list, w2vnumfil
 
                     sys.stdout.flush()
 
-    copyfile(best_model_path, model_path)
+
 
 
 
@@ -413,7 +414,7 @@ if __name__ == "__main__":
     lex_list = get_lex_file_list(args.l)
 
     if not os.path.isfile(args.v):
-        print 'wrong file name(s) for the w2v binary\n%s' % args.v
+        print 'wrong file name for the w2v binary\n%s' % args.v
         exit()
 
     if not os.path.isfile(args.t):
