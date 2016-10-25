@@ -91,7 +91,6 @@ def run_train(w2v_path, trn_path, dev_path, model_path, lex_path_list, w2vnumfil
         w2vmodel = load_w2v_withpath(w2v_path)
 
     with Timer("lex"):
-        print 'old way of loading lexicon'
         norm_model, raw_model = load_lexicon_unigram(lex_path_list)
 
     lexdim = 0
@@ -391,7 +390,7 @@ if __name__ == "__main__":
     parser.add_argument('-v', default='../data/emory_w2v/w2v-50.bin', type=str) # w2v-400.bin
     parser.add_argument('-t', default='./trn', type=str) # train_data
     parser.add_argument('-d', default='./dev', type=str) # dev_data
-    parser.add_argument('-l', default='./lex_config.txt', type=str) # lex_config.txt
+    parser.add_argument('-l', default='none', type=str) # lex_config.txt
     parser.add_argument('-m', default='./model_test', type=str) # model_file
 
     parser.add_argument('-w2vnumfilters', default=64, type=int)
@@ -411,7 +410,10 @@ if __name__ == "__main__":
           % (args.w2vnumfilters, args.lexnumfilters, args.randomseed,
              args.num_epochs, args.l2_reg_lambda, args.l1_reg_lambda)
 
-    lex_list = get_lex_file_list(args.l)
+    if args.l == 'none':
+        lex_list = []
+    else:
+        lex_list = get_lex_file_list(args.l)
 
     if not os.path.isfile(args.v):
         print 'wrong file name for the w2v binary\n%s' % args.v

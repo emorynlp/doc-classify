@@ -75,7 +75,6 @@ def run_test(model_path, w2v_path, lex_path_list, input_path):
         w2vmodel = load_w2v_withpath(w2v_path)
 
     with Timer("lex"):
-        print 'old way of loading lexicon'
         norm_model, raw_model = load_lexicon_unigram(lex_path_list)
 
     for model_idx in range(len(norm_model)):
@@ -167,14 +166,17 @@ if __name__ == "__main__":
     # python decode.py -m model_file -l lex_config.txt -i input_data
     parser.add_argument('-m', default='./model_test', type=str)
     parser.add_argument('-v', default='../data/emory_w2v/w2v-50.bin', type=str)  # w2v-400.bin
-    parser.add_argument('-l', default='./lex_config.txt', type=str)
+    parser.add_argument('-l', default='none', type=str)
     parser.add_argument('-i', default='./input', type=str)
     args = parser.parse_args()
     program = os.path.basename(sys.argv[0])
 
     # print 'model: %s\n' % (args.model)
 
-    lex_list = get_lex_file_list(args.l)
+    if args.l == 'none':
+        lex_list = []
+    else:
+        lex_list = get_lex_file_list(args.l)
 
     if not os.path.isfile(args.m):
         print 'wrong model file name\n%s' % args.m
@@ -196,4 +198,4 @@ if __name__ == "__main__":
 
     run_test(args.m, args.v, lex_list, args.i)
 
-    # python test_model.py -m ./mymodel2 -v ../data/emory_w2v/w2v-50.bin  -l lex_config2.txt -i ../data/tweets/sample
+    # python decode.py -m ./mymodel2 -v ../data/emory_w2v/w2v-50.bin  -l lex_config2.txt -i ../data/tweets/sample

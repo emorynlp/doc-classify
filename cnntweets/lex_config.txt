@@ -1,7 +1,7 @@
-../data/lexicon_data/BL.txt
-../data/lexicon_data/HS-AFFLEX-NEGLEX-unigrams.txt
-../data/lexicon_data/S140-AFFLEX-NEGLEX-unigrams.txt
-../data/lexicon_data/unigrams-pmilexicon_sentiment_140.txt
-../data/lexicon_data/EverythingUnigramsPMIHS.txt
-../data/lexicon_data/Maxdiff-Twitter-Lexicon_0to1.txt
-../data/lexicon_data/unigrams-pmilexicon.txt
+./lexicons/BL.txt
+./lexicons/HS-AFFLEX-NEGLEX-unigrams.txt
+./lexicons/S140-AFFLEX-NEGLEX-unigrams.txt
+./lexicons/unigrams-pmilexicon_sentiment_140.txt
+./lexicons/EverythingUnigramsPMIHS.txt
+./lexicons/Maxdiff-Twitter-Lexicon_0to1.txt
+./lexicons/unigrams-pmilexicon.txt

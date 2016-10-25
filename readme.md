@@ -1,5 +1,6 @@
 ## Emory Sentiment Analysis
 
+* Author: [Bonggun Shin](bonggun.shin@emory.edu)
 
 ## Installation
 ### clone the repository
@@ -40,38 +41,6 @@ pip install --upgrade $TF_BINARY_URL
 	* tensorflow==0.10.0rc0
 
 
-### Required files
-* Please contact us to obtain the following files
-* word2vec
-	* filename
-	
-```
-data/emory_w2v/w2v-400.bin
-```
-* lexicon_data
-	* filenames
-	
-```
-data/lexicon_data/BL.txt
-data/lexicon_data/EverythingUnigramsPMIHS.txt
-data/lexicon_data/HS-AFFLEX-NEGLEX-unigrams.txt
-data/lexicon_data/Maxdiff-Twitter-Lexicon_0to1.txt
-data/lexicon_data/S140-AFFLEX-NEGLEX-unigrams.txt
-data/lexicon_data/unigrams-pmilexicon_sentiment_140.txt
-data/lexicon_data/unigrams-pmilexicon.txt
-```
-
-* trained_models
-	* filenames
-	
-```
-data/trained_models/model-w2v
-data/trained_models/model-w2vlexatt
-```
-	
-	
-
-
 ## Usage
 ### Train 
 * Input file format - **note that the text should be tokenized**
@@ -84,9 +53,7 @@ data/trained_models/model-w2vlexatt
 ```bash
 cd cnntweets
 # plain cnn
-nohup python train_model.py --model w2v > out.txt &
-# cnn + lexicon
-nohup python train_model.py --model w2vlexatt > out.txt &
+python train_model.py -v ./w2v-50.bin -t ./trn -d ./dev -l ./lex_config.txt -m ./mymodel
 ```
 	
 ### Test 
@@ -97,13 +64,9 @@ nohup python train_model.py --model w2vlexatt > out.txt &
 | I may be the only one… |
 | If Scotland woke…      |
 
-	
-	
 
 ```bash
 cd cnntweets
-# plain cnn
-python test_model.py --model w2v
-# cnn + lexicon
-python test_model.py --model w2vlexatt
+python decode.py -m ./mymodel -v ./w2v-50.bin  -l ./lex_config.txt -i ./input
 ```
+
