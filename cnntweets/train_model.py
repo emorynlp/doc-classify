@@ -27,7 +27,7 @@ from utils.butils import Timer
 from cnn_models.w2v_lex_cnn import W2V_LEX_CNN
 from cnn_models.w2v_cnn import W2V_CNN
 import os.path
-import cnntweets.utils.word2vecReaderUtils as utils
+import utils.word2vecReaderUtils as utils
 
 
 
