@@ -49,12 +49,7 @@ def load_data_and_labels(dataset, rottenTomato=False):
     Loads MR polarity data from files, splits the data into words and generates labels.
     Returns split sentences and labels.
     """
-    if rottenTomato:
-        template_txt = '../data/rt-data-nlp4jtok/%s'
-    else:
-        template_txt = '../data/tweets/%s'
-
-    pathtxt = template_txt % dataset
+    pathtxt = dataset
 
     x_text=[line.split('\t')[2] for line in open(pathtxt, "r").readlines()]
     x_text = [s.split(" ") for s in x_text]
@@ -75,7 +70,7 @@ def load_data_and_labels(dataset, rottenTomato=False):
             elif senti == 'very_negative':
                 y.append([1, 0, 0, 0 ,0])
 
-    else:    
+    else:
         for line in open(pathtxt, "r").readlines():
             senti=line.split('\t')[1]
             if  senti == 'objective':
@@ -378,89 +373,49 @@ def load_w2v(w2vdim, simple_run=True, source="twitter"):
 
         return model
 
+def load_w2v_withpath(model_path):
+    model = Word2Vec.load_word2vec_format(model_path, binary=True)
+    print("The vocabulary size is: " + str(len(model.vocab)))
 
-def load_lexicon_unigram(lexdim):
-    if lexdim == 6:
-        default_vector_dic = {'EverythingUnigramsPMIHS.txt': [0],
-                              'HS-AFFLEX-NEGLEX-unigrams.txt': [0],
-                              'Maxdiff-Twitter-Lexicon_0to1.txt': [0.5],
-                              'S140-AFFLEX-NEGLEX-unigrams.txt': [0],
-                              'unigrams-pmilexicon.txt': [0],
-                              'unigrams-pmilexicon_sentiment_140.txt': [0]}
+    return model
 
-    elif lexdim == 2:
-        default_vector_dic = {'EverythingUnigramsPMIHS.txt': [0],
-                              'unigrams-pmilexicon.txt': [0]}
 
-    elif lexdim == 4:
-        default_vector_dic = {'EverythingUnigramsPMIHS.txt': [0],
-                              'unigrams-pmilexicon.txt': [0, 0, 0]}
+def load_lexicon_unigram(file_path_list):
+    default_vector_dic = {'EverythingUnigramsPMIHS.txt': [0],
+                          'HS-AFFLEX-NEGLEX-unigrams.txt': [0, 0, 0],
+                          'Maxdiff-Twitter-Lexicon_0to1.txt': [0.5],
+                          'S140-AFFLEX-NEGLEX-unigrams.txt': [0, 0, 0],
+                          'unigrams-pmilexicon.txt': [0, 0, 0],
+                          'unigrams-pmilexicon_sentiment_140.txt': [0, 0, 0],
+                          'BL.txt': [0]}
 
-    elif lexdim == 15:
-        default_vector_dic = {'EverythingUnigramsPMIHS.txt': [0],
-                              'HS-AFFLEX-NEGLEX-unigrams.txt': [0, 0, 0],
-                              'Maxdiff-Twitter-Lexicon_0to1.txt': [0.5],
-                              'S140-AFFLEX-NEGLEX-unigrams.txt': [0, 0, 0],
-                              'unigrams-pmilexicon.txt': [0, 0, 0],
-                              'unigrams-pmilexicon_sentiment_140.txt': [0, 0, 0],
-                              'BL.txt': [0]}
-    else:
-        default_vector_dic = {'EverythingUnigramsPMIHS.txt': [0],
-                              'HS-AFFLEX-NEGLEX-unigrams.txt': [0, 0, 0],
-                              'Maxdiff-Twitter-Lexicon_0to1.txt': [0.5],
-                              'S140-AFFLEX-NEGLEX-unigrams.txt': [0, 0, 0],
-                              'unigrams-pmilexicon.txt': [0, 0, 0],
-                              'unigrams-pmilexicon_sentiment_140.txt': [0, 0, 0],
-                              'BL.txt': [0]}
 
-    file_path = ["../data/lexicon_data/" + files for files in os.listdir("../data/lexicon_data") if
-                 files.endswith(".txt")]
-    if lexdim == 2 or lexdim == 4:
-        raw_model = [dict() for x in range(2)]
-        norm_model = [dict() for x in range(2)]
-        file_path = ['../data/lexicon_data/EverythingUnigramsPMIHS.txt', '../data/lexicon_data/unigrams-pmilexicon.txt']
-    else:
-        raw_model = [dict() for x in range(len(file_path))]
-        norm_model = [dict() for x in range(len(file_path))]
+    raw_model = [dict() for x in range(len(file_path_list))]
+    norm_model = [dict() for x in range(len(file_path_list))]
 
     for index, each_model in enumerate(raw_model):
-        data_type = file_path[index].replace("../data/lexicon_data/", "")
-        # if lexdim == 2 or lexdim == 4:
-        #     if data_type not in ['EverythingUnigramsPMIHS.txt', 'unigrams-pmilexicon.txt']:
-        #         continue
-
+        data_type = file_path_list[index].replace("../data/lexicon_data/", "")
         default_vector = default_vector_dic[data_type]
 
         # print data_type, default_vector
         raw_model[index]["<PAD/>"] = default_vector
 
-        with open(file_path[index], 'r') as document:
+        with open(file_path_list[index], 'r') as document:
             for line in document:
                 line_token = re.split(r'\t', line)
 
                 data_vec = []
                 key = ''
 
-                if lexdim == 2 or lexdim == 6:
-                    for idx, tk in enumerate(line_token):
-                        if idx == 0:
-                            key = tk
 
-                        elif idx == 1:
+                for idx, tk in enumerate(line_token):
+                    if idx == 0:
+                        key = tk
+                    else:
+                        try:
                             data_vec.append(float(tk))
-
-                        else:
-                            continue
-
-                else:  # 4 or 14
-                    for idx, tk in enumerate(line_token):
-                        if idx == 0:
-                            key = tk
-                        else:
-                            try:
-                                data_vec.append(float(tk))
-                            except:
-                                pass
+                        except:
+                            pass
 
                 assert (key != '')
                 each_model[key] = data_vec
