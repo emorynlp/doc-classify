@@ -52,7 +52,6 @@ pip install --upgrade $TF_BINARY_URL
 	
 ```bash
 cd cnntweets
-# plain cnn
 python train_model.py -v ./w2v-50.bin -t ./trn -d ./dev -l ./lex_config.txt -m ./mymodel
 ```
 	
