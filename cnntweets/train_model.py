@@ -412,9 +412,6 @@ if __name__ == "__main__":
 
     lex_list = get_lex_file_list(args.l)
 
-    copyfile('../data/lexicon_data/HS-AFFLEX-NEGLEX-unigrams.txt', args.m)
-    exit()
-
     if not os.path.isfile(args.v):
         print 'wrong file name(s) for the w2v binary\n%s' % args.v
         exit()
