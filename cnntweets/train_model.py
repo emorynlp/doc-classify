@@ -440,3 +440,4 @@ if __name__ == "__main__":
     #           args.l2_reg_lambda, args.l1_reg_lambda,
     #           simple_run=True)
 
+    # python train_model.py -v ../data/emory_w2v/w2v-50.bin -t ../data/tweets/trn -d ../data/tweets/dev -l lex_config2.txt -m ./mymodel2
