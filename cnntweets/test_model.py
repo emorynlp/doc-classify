@@ -193,6 +193,6 @@ if __name__ == "__main__":
     for l in lex_list:
         print l
 
-    run_test(args.m, args.v, args.l, args.i)
+    run_test(args.m, args.v, lex_list, args.i)
 
     # python test_model.py -m ./mymodel2 -v ../data/emory_w2v/w2v-50.bin  -l lex_config2.txt -i ../data/tweets/sample

@@ -395,8 +395,6 @@ def load_lexicon_unigram(file_path_list):
 
     for index, each_model in enumerate(raw_model):
         data_type = file_path_list[index].replace("../data/lexicon_data/", "")
-        print file_path_list[index]
-        print data_type
         default_vector = default_vector_dic[data_type]
 
         # print data_type, default_vector
