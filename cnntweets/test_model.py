@@ -25,6 +25,7 @@ import sys
 from utils import cnn_data_helpers
 from utils.butils import Timer
 from cnn_models.w2v_cnn import W2V_CNN
+from cnn_models.w2v_lex_cnn import W2V_LEX_CNN
 import utils.word2vecReaderUtils as utils
 
 from utils.cnn_data_helpers import load_w2v_withpath
