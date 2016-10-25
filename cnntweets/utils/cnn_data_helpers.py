@@ -31,12 +31,7 @@ def load_test_data_and_labels(dataset, rottenTomato=False):
     Loads MR polarity data from files, splits the data into words and generates labels.
     Returns split sentences and labels.
     """
-    if rottenTomato:
-        template_txt = '../data/rt-data-nlp4jtok/%s'
-    else:
-        template_txt = '../data/tweets/%s'
-
-    pathtxt = template_txt % dataset
+    pathtxt = dataset
 
     x_text=[line.split('\t')[0] for line in open(pathtxt, "r").readlines()]
     x_text = [s.split(" ") for s in x_text]

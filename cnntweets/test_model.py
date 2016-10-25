@@ -106,8 +106,8 @@ def run_test(model_path, w2v_path, lex_path_list, input_path):
 
             else: # w2vlexatt
                 cnn = W2V_LEX_CNN(
-                    sequence_length=x_train.shape[1],
-                    num_classes=num_classes,
+                    sequence_length=x_sample.shape[1],
+                    num_classes=3,
                     embedding_size=w2vdim,
                     embedding_size_lex=lexdim,
                     num_filters_lex=lexnumfilters,
