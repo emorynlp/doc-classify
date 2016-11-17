@@ -1,6 +1,6 @@
 ## Emory Sentiment Analysis
 
-* Author: [Bonggun Shin](bonggun.shin@emory.edu)
+* Author: [Bonggun Shin](mailto:bonggun.shin@emory.edu)
 
 ## Installation
 ### clone the repository
