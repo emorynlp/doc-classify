@@ -65,7 +65,7 @@ print("")
 #           args.num_epochs, args.l2_reg_lambda, args.l1_reg_lambda,
 #           simple_run=False)
 def run_train(w2v_path, trn_path, dev_path, model_path, lex_path_list, w2vnumfilters, lexnumfilters, randomseed,
-              num_epochs, num_class, l2_reg_lambda, l1_reg_lambda, simple_run=True):
+              num_epochs, num_class, max_sentence_len, l2_reg_lambda, l1_reg_lambda, simple_run=True):
     if simple_run == True:
         print '======================================[simple_run]======================================'
 
@@ -76,7 +76,7 @@ def run_train(w2v_path, trn_path, dev_path, model_path, lex_path_list, w2vnumfil
 
     best_model_path = None
 
-    max_len = 60
+    max_len = max_sentence_len
 
     multichannel = False
     multichannel_a2v = False
@@ -398,6 +398,7 @@ if __name__ == "__main__":
     parser.add_argument('-randomseed', default=1, type=int)
     parser.add_argument('-num_epochs', default=25, type=int)
     parser.add_argument('-num_class', default=5, type=int)
+    parser.add_argument('-max_sentence_size', default= 100, type=int)
     parser.add_argument('-l2_reg_lambda', default=2.0, type=float)
     parser.add_argument('-l1_reg_lambda', default=0.0, type=float)
 
@@ -435,7 +436,7 @@ if __name__ == "__main__":
         print l
 
     run_train(args.v, args.t, args.d, args.m, lex_list, args.w2vnumfilters, args.lexnumfilters, args.randomseed,
-              args.num_epochs,args.num_class, args.l2_reg_lambda, args.l1_reg_lambda,
+              args.num_epochs,args.num_class, args.max_sentence_size, args.l2_reg_lambda, args.l1_reg_lambda,
               simple_run=False)
 
     # python train_model.py -v ../data/emory_w2v/w2v-50.bin -t ../data/tweets/trn -d ../data/tweets/dev -l lex_config2.txt -m ./mymodel2
