@@ -43,7 +43,7 @@ import pickle
 
 # Model Hyperparameters
 tf.flags.DEFINE_string("filter_sizes", "2,3,4,5", "Comma-separated filter sizes (default: '3,4,5')")
-tf.flags.DEFINE_float("dropout_keep_prob", 0.8, "Dropout keep probability (default: 0.5)")
+tf.flags.DEFINE_float("dropout_keep_prob", 0.5, "Dropout keep probability (default: 0.5)")
 # Training parameters
 tf.flags.DEFINE_integer("batch_size", 64, "Batch Size (default: 64)")
 tf.flags.DEFINE_integer("evaluate_every", 100, "Evaluate model on dev set after this many steps (default: 100)")
@@ -65,7 +65,7 @@ print("")
 #           args.num_epochs, args.l2_reg_lambda, args.l1_reg_lambda,
 #           simple_run=False)
 def run_train(w2v_path, trn_path, dev_path, model_path, lex_path_list, w2vnumfilters, lexnumfilters, randomseed,
-              num_epochs, l2_reg_lambda, l1_reg_lambda, simple_run=True):
+              num_epochs, num_class, l2_reg_lambda, l1_reg_lambda, simple_run=True):
     if simple_run == True:
         print '======================================[simple_run]======================================'
 
@@ -136,7 +136,7 @@ def run_train(w2v_path, trn_path, dev_path, model_path, lex_path_list, w2vnumfil
             if randomseed > 0:
                 tf.set_random_seed(randomseed)
 
-            num_classes = 3
+            num_classes = num_class
 
             if model_name == 'w2v':
                 cnn = W2V_CNN(
@@ -397,6 +397,7 @@ if __name__ == "__main__":
     parser.add_argument('-lexnumfilters', default=9, type=int)
     parser.add_argument('-randomseed', default=1, type=int)
     parser.add_argument('-num_epochs', default=25, type=int)
+    parser.add_argument('-num_class', default=5, type=int)
     parser.add_argument('-l2_reg_lambda', default=2.0, type=float)
     parser.add_argument('-l1_reg_lambda', default=0.0, type=float)
 
@@ -434,12 +435,7 @@ if __name__ == "__main__":
         print l
 
     run_train(args.v, args.t, args.d, args.m, lex_list, args.w2vnumfilters, args.lexnumfilters, args.randomseed,
-              args.num_epochs, args.l2_reg_lambda, args.l1_reg_lambda,
+              args.num_epochs,args.num_class, args.l2_reg_lambda, args.l1_reg_lambda,
               simple_run=False)
-
-    # run_train(args.w2vsource, args.w2vdim, args.w2vnumfilters, args.lexdim, args.lexnumfilters, args.randomseed,
-    #           args.model, args.expanded, args.attdepthw2v, args.attdepthlex, args.num_epochs,
-    #           args.l2_reg_lambda, args.l1_reg_lambda,
-    #           simple_run=True)
 
     # python train_model.py -v ../data/emory_w2v/w2v-50.bin -t ../data/tweets/trn -d ../data/tweets/dev -l lex_config2.txt -m ./mymodel2
