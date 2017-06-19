@@ -148,8 +148,13 @@ def run_test(model_path, w2v_path, lex_path_list, input_path, num_class):
             else:
                 predictions = get_prediction(x_sample, x_lex_sample)
 
-            labels={0:'negative', 1:'objective', 2:'positive'}
-            print '%s\n'*len(x_sample) % tuple(labels[l] for l in predictions)
+            if num_class == 3:
+                labels={0:'negative', 1:'objective', 2:'positive'}
+                print '%s\n'*len(x_sample) % tuple(labels[l] for l in predictions)
+
+            else:
+                labels = {0: 'very_negative', 1: 'negative', 2: 'objective', 3: 'positive', 4: 'very_positive'}
+                print '%s\n' * len(x_sample) % tuple(labels[l] for l in predictions)
 
 def get_lex_file_list(lexfile_path):
     lex_file_list = []
