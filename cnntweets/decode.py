@@ -82,7 +82,13 @@ def run_test(model_path, w2v_path, lex_path_list, input_path, num_class):
 
     unigram_lexicon_model = norm_model
 
-    x_sample, x_lex_sample, _ = cnn_data_helpers.load_test_data(input_path, w2vmodel, unigram_lexicon_model, max_len)
+    if num_class==3:
+        rottenTomato=False
+    else:
+        rottenTomato=True
+
+    x_sample, x_lex_sample, _ = cnn_data_helpers.load_test_data(input_path, w2vmodel, unigram_lexicon_model,
+                                                                rottenTomato=rottenTomato)
 
     del(w2vmodel)
     gc.collect()
