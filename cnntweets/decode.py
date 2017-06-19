@@ -52,7 +52,7 @@ FLAGS._parse_flags()
 # print("")
 
 # run_test(args.m, args.v, args.l, args.i)
-def run_test(model_path, w2v_path, lex_path_list, input_path):
+def run_test(model_path, w2v_path, lex_path_list, input_path, num_class):
     max_len = 60
     w2vnumfilters = 64
     lexnumfilters = 9
@@ -97,7 +97,7 @@ def run_test(model_path, w2v_path, lex_path_list, input_path):
             if model_name == 'w2v':
                 cnn = W2V_CNN(
                     sequence_length=x_sample.shape[1],
-                    num_classes=3,
+                    num_classes=num_class,
                     embedding_size=w2vdim,
                     filter_sizes=list(map(int, FLAGS.filter_sizes.split(","))),
                     num_filters=w2vnumfilters,
@@ -107,7 +107,7 @@ def run_test(model_path, w2v_path, lex_path_list, input_path):
             else: # w2vlexatt
                 cnn = W2V_LEX_CNN(
                     sequence_length=x_sample.shape[1],
-                    num_classes=3,
+                    num_classes=num_class,
                     embedding_size=w2vdim,
                     embedding_size_lex=lexdim,
                     num_filters_lex=lexnumfilters,
@@ -168,6 +168,7 @@ if __name__ == "__main__":
     parser.add_argument('-v', default='../data/emory_w2v/w2v-50.bin', type=str)  # w2v-400.bin
     parser.add_argument('-l', default='none', type=str)
     parser.add_argument('-i', default='./input', type=str)
+    parser.add_argument('-nc', default=3, type=int)
     args = parser.parse_args()
     program = os.path.basename(sys.argv[0])
 
@@ -196,6 +197,6 @@ if __name__ == "__main__":
     for l in lex_list:
         print l
 
-    run_test(args.m, args.v, lex_list, args.i)
+    run_test(args.m, args.v, lex_list, args.i, args.nc)
 
     # python decode.py -m ./mymodel2 -v ../data/emory_w2v/w2v-50.bin  -l lex_config2.txt -i ../data/tweets/sample
