@@ -276,7 +276,7 @@ def load_data(dataset, w2vmodel, lexiconModel, padlen=None, rottenTomato=False, 
     # Load and preprocess data
     if rottenTomato:
         sentences, labels = load_data_and_labels(dataset, True)
-        sentences_padded = pad_sentences(sentences, padlen)
+        sentences_padded = pad_sentences(sentences, None)
     else:
         sentences, labels = load_data_and_labels(dataset)
         sentences_padded = pad_sentences(sentences, padlen)
