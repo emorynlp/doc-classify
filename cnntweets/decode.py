@@ -163,7 +163,7 @@ def run_test(model_path, w2v_path, lex_path_list, input_path, num_class):
                         handle.write(labels[p]+'\n')
 
             else:
-                labels = {0: 'very_negative', 1: 'negative', 2: 'objective', 3: 'positive', 4: 'very_positive'}
+                labels = {0: 'very_negative', 1: 'negative', 2: 'neutral', 3: 'positive', 4: 'very_positive'}
                 print '%s\n' * len(x_sample) % tuple(labels[l] for l in predictions)
 
                 with open('prediction.txt', 'wt') as handle:
