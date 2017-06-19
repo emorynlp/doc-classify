@@ -120,17 +120,22 @@ def run_test(model_path, w2v_path, lex_path_list, input_path, num_class):
             saver = tf.train.Saver(tf.all_variables())
             saver.restore(sess,model_path)
 
+            if num_class==3:
+                dummy_y = [1, 0, 0]
+            else:
+                dummy_y = [1, 0, 0, 0, 0]
+
             def get_prediction(x_batch, x_batch_lex=None):
                 if x_batch_lex is None:
                     feed_dict = {
                         cnn.input_x: x_batch,
-                        cnn.input_y: np.array([[1,0,0]]),
+                        cnn.input_y: np.array([dummy_y]),
                         cnn.dropout_keep_prob: 1.0
                     }
                 else:
                     feed_dict = {
                         cnn.input_x: x_batch,
-                        cnn.input_y: np.array([[1,0,0]]),
+                        cnn.input_y: np.array([dummy_y]),
                         cnn.input_x_lexicon: x_batch_lex,
                         cnn.dropout_keep_prob: 1.0
                     }
