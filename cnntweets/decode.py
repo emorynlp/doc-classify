@@ -54,7 +54,7 @@ FLAGS._parse_flags()
 # run_test(args.m, args.v, args.l, args.i)
 def run_test(model_path, w2v_path, lex_path_list, input_path, num_class):
     max_len = 60
-    w2vnumfilters = 64
+    w2vnumfilters = 16
     lexnumfilters = 9
     l2_reg_lambda = 2.0
     l1_reg_lambda = 0.0
